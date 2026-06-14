@@ -39,9 +39,3 @@ coverage
 __screenshots__/
 test-results/
 .npmrc
-
-# Deployment-only exclusions
-k8s/
-app.Dockerfile
-docker-compose.yml
-.gitlab-ci.yml
