@@ -1,0 +1,107 @@
+import type { RouteRequest } from '@/shared/api/route.types'
+
+const defaultWeights: RouteRequest['criteria_weights'] = {
+  distance: 1,
+  duration: 1,
+  fuel_cost: 0.8,
+  emissions: 0,
+  congestion: 0,
+  weather_risk: 0,
+  reliability: 0,
+  safety: 0,
+  tolls: 0.4,
+  road_quality: 0,
+  dynamic_events: 0,
+  operational_cost: 0.8,
+  cargo_risk: 0,
+}
+
+export function createDefaultRouteDraft(): RouteRequest {
+  return {
+    points: [
+      {
+        label: 'Москва',
+        lat: 55.7558,
+        lon: 37.6173,
+      },
+      {
+        label: 'Тверь',
+        lat: 56.8587,
+        lon: 35.9176,
+      },
+      {
+        label: 'Тула',
+        lat: 54.2048,
+        lon: 37.6185,
+      },
+      {
+        label: 'Владимир',
+        lat: 56.1291,
+        lon: 40.4074,
+      },
+    ],
+    optimize: true,
+    fix_ends: false,
+    profile: 'driving',
+    vehicle_class: 'passenger',
+    vehicle_dimensions: {
+      height_m: null,
+      weight_t: null,
+      width_m: null,
+      length_m: null,
+    },
+    vehicle_capacity_t: null,
+    cargo: {
+      profile: 'standard',
+      weight_t: null,
+      declared_value_rub: null,
+      deadline_at: null,
+    },
+    cvrp: {
+      point_demands_t: [],
+      vehicle_count: 1,
+      depot_index: 0,
+      return_to_depot: false,
+    },
+    operating_costs: {
+      driver_cost_per_hour: null,
+      maintenance_cost_per_km: null,
+    },
+    fuel_type: 'petrol',
+    fuel_consumption_l_per_100km: null,
+    optimize_mode: 'weighted',
+    optimization_strategy: 'balanced',
+    tradeoff_tolerance: {
+      max_distance_regression_pct: 0,
+      max_duration_regression_pct: 0,
+      max_fuel_cost_regression_pct: 0,
+      max_operational_cost_regression_pct: 0,
+      max_fuel_liters_regression_pct: 0,
+      max_co2_regression_pct: 0,
+      max_cargo_risk_regression_pct: 0,
+      min_risk_reduction_pct: 0,
+      min_reliability_gain_pct: 0,
+      allow_constraint_penalty_regression: false,
+    },
+    priority_profile: 'balanced',
+    criteria_weights: { ...defaultWeights },
+    constraints: {
+      max_distance_km: null,
+      max_duration_min: null,
+      max_fuel_cost: null,
+      max_operational_cost: null,
+      max_co2_kg: null,
+      max_safety_risk: null,
+      max_cargo_risk: null,
+    },
+    use_dynamic_weights: true,
+    departure_at: new Date().toISOString(),
+    adapt_from_run_id: null,
+    population_size: 120,
+    generations: 160,
+    crossover_rate: 0.8,
+    mutation_rate: 0.08,
+    max_alternatives: 3,
+    random_seed: null,
+  }
+}
