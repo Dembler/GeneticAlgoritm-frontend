@@ -168,22 +168,40 @@ watch(
 
 <style scoped>
 .service-shell {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(0 0% 8%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(0 0% 8%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(0 0% 8%);
+  --primary: hsl(0 0% 7%);
+  --primary-foreground: hsl(0 0% 99%);
+  --secondary: hsl(0 0% 92%);
+  --secondary-foreground: hsl(0 0% 12%);
+  --muted: hsl(0 0% 95%);
+  --muted-foreground: hsl(0 0% 36%);
+  --accent: hsl(0 0% 89%);
+  --accent-foreground: hsl(0 0% 10%);
+  --border: hsl(0 0% 78%);
+  --input: hsl(0 0% 99%);
+  --ring: hsl(0 0% 12%);
+  --chart-1: hsl(0 0% 12%);
+  --chart-2: hsl(0 0% 28%);
+  --chart-3: hsl(0 0% 18%);
+  --chart-4: hsl(0 0% 42%);
+  --chart-5: hsl(0 0% 55%);
+  --positive-foreground: hsl(0 0% 16%);
+  --negative-foreground: hsl(0 0% 20%);
   min-height: 100vh;
   display: flex;
-  background:
-    radial-gradient(
-      circle at top left,
-      color-mix(in oklch, var(--chart-3) 10%, transparent),
-      transparent 30rem
-    ),
-    color-mix(in oklch, var(--background) 96%, var(--card) 4%);
+  background: hsl(0 0% 100%);
 }
 
 .service-content {
   min-width: 0;
-  width: min(100%, 76rem);
+  width: min(100%, 104rem);
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1.5rem 2rem;
 }
 
 @media (max-width: 1023px) {

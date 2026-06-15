@@ -26,21 +26,42 @@ import {
   type IntegrationStatus,
 } from '@/shared/api/system.api'
 import type { ApiError } from '@/shared/api/types'
-import {
-  formatDataSource,
-  formatIntegrationName,
-  formatTechnicalStatus,
-} from '@/shared/lib/format/routePresentation'
 import { getStoredLocale, isSupportedLocale, localeStorageKey, type Locale } from '@/shared/i18n'
 import { applyTheme, getStoredTheme, isAppTheme, themeStorageKey, type AppTheme } from '@/app/theme'
+import { formatDataSource, formatIntegrationName } from '@/shared/lib/format/routePresentation'
 
-const { locale } = useI18n({ useScope: 'global' })
+const { locale, t, te } = useI18n({ useScope: 'global' })
 const selectedLocale = useLocalStorage<Locale>(localeStorageKey, getStoredLocale())
 const selectedTheme = useLocalStorage<AppTheme>(themeStorageKey, getStoredTheme())
 const integrations = ref<IntegrationStatus[]>([])
 const health = ref<HealthStatus | null>(null)
 const loadingIntegrations = ref(false)
 const integrationsError = ref<string | null>(null)
+
+const englishIntegrationNames: Record<string, string> = {
+  'OSRM Routing': 'OSRM Routing',
+  Weather: 'Weather',
+  Elevation: 'Elevation',
+  Traffic: 'Traffic',
+  'Road quality': 'Road quality',
+  'Road events': 'Road events',
+  'Infrastructure restrictions': 'Infrastructure restrictions',
+  Tolls: 'Tolls',
+  'Fuel prices': 'Fuel prices',
+}
+
+const englishSourceNames: Record<string, string> = {
+  fallback: 'Fallback model',
+  'synthetic fallback': 'Fallback model',
+  'cached demo provider': 'Demo provider',
+  'not configured': 'not configured',
+  'Haversine matrix': 'Fallback model',
+  'seasonal profile': 'seasonal profile',
+  'synthetic congestion index': 'synthetic congestion index',
+  backend: 'Backend',
+}
+
+const dateTimeLocale = computed(() => (locale.value === 'en' ? 'en-US' : 'ru-RU'))
 
 const isDarkTheme = computed({
   get: () => selectedTheme.value === 'dark',
@@ -49,20 +70,83 @@ const isDarkTheme = computed({
   },
 })
 
+const translatedIntegrationsError = computed(() => {
+  if (integrationsError.value === null) {
+    return null
+  }
+
+  const message = integrationsError.value.trim()
+
+  if (!message) {
+    return t('settings.backendUnavailable')
+  }
+
+  if (message.toLowerCase() === 'not found') {
+    return t('settings.integrationsNotFound')
+  }
+
+  return message
+})
+
 const dataSources = computed(() =>
-  integrations.value.map((integration) => ({
-    label: formatIntegrationName(integration.name),
-    mode: formatTechnicalStatus(integration.status),
-    detail: `${formatDataSource(integration.source)}. Резерв: ${formatDataSource(integration.fallback)}`,
-  })),
+  integrations.value.map((integration) => {
+    const source = formatSourceName(integration.source)
+    const fallback = formatSourceName(integration.fallback)
+
+    return {
+      label: formatIntegrationLabel(integration.name),
+      mode: formatStatusLabel(integration.status),
+      detail: t('settings.dataSourceDetail', { source, fallback }),
+    }
+  }),
 )
+
+function formatIntegrationLabel(value: string | null | undefined) {
+  const normalized = value?.trim()
+
+  if (!normalized) {
+    return t('settings.integrationFallback')
+  }
+
+  return locale.value === 'en'
+    ? (englishIntegrationNames[normalized] ?? normalized)
+    : formatIntegrationName(normalized)
+}
+
+function formatSourceName(value: string | null | undefined) {
+  const normalized = value?.trim()
+
+  if (!normalized) {
+    return t('settings.noData')
+  }
+
+  if (locale.value === 'en') {
+    return (
+      englishSourceNames[normalized] ?? englishSourceNames[normalized.toLowerCase()] ?? normalized
+    )
+  }
+
+  return formatDataSource(normalized)
+}
+
+function formatStatusLabel(value: string | null | undefined) {
+  const normalized = value?.trim().toLowerCase()
+
+  if (!normalized) {
+    return t('status.unknown')
+  }
+
+  const key = `status.${normalized}`
+
+  return te(key) ? t(key) : normalized
+}
 
 function errorMessage(error: unknown) {
   if (typeof error === 'object' && error && 'message' in error) {
     return String((error as ApiError).message)
   }
 
-  return 'Backend недоступен. Проверьте подключение или повторите позже.'
+  return ''
 }
 
 async function refreshIntegrations() {
@@ -86,12 +170,12 @@ async function refreshIntegrations() {
 
 function formatDateTime(value?: string | null) {
   if (!value) {
-    return 'нет данных'
+    return t('settings.noData')
   }
 
   const date = new Date(value)
 
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString('ru-RU')
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString(dateTimeLocale.value)
 }
 
 watch(
@@ -136,36 +220,36 @@ onMounted(() => {
 <template>
   <div class="grid min-w-0 gap-5">
     <header>
-      <Badge variant="outline" class="mb-2">Настройки</Badge>
-      <h1 class="text-2xl font-semibold text-foreground">Параметры интерфейса</h1>
+      <Badge variant="outline" class="mb-2">{{ t('settings.badge') }}</Badge>
+      <h1 class="text-2xl font-semibold text-foreground">{{ t('settings.title') }}</h1>
     </header>
 
     <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <Card>
         <CardHeader>
-          <CardTitle class="text-base">Основные параметры</CardTitle>
+          <CardTitle class="text-base">{{ t('settings.mainTitle') }}</CardTitle>
         </CardHeader>
         <CardContent class="grid gap-5">
           <div class="grid gap-2 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
-            <Label class="pt-2">Язык интерфейса</Label>
+            <Label class="pt-2">{{ t('settings.languageLabel') }}</Label>
             <div class="grid w-full max-w-[28rem] gap-2">
-              <Select v-model="selectedLocale" aria-label="Язык интерфейса">
+              <Select v-model="selectedLocale" :aria-label="t('settings.languageLabel')">
                 <SelectTrigger class="h-10 w-full rounded-lg bg-input">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ru">Русский</SelectItem>
-                  <SelectItem value="en">Английский</SelectItem>
+                  <SelectItem value="ru">{{ t('settings.languages.ru') }}</SelectItem>
+                  <SelectItem value="en">{{ t('settings.languages.en') }}</SelectItem>
                 </SelectContent>
               </Select>
               <p class="text-xs leading-5 text-muted-foreground">
-                Для демонстрационного режима рекомендуется русский интерфейс.
+                {{ t('settings.languageHint') }}
               </p>
             </div>
           </div>
 
           <div class="grid gap-2 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
-            <Label class="pt-1">Тема</Label>
+            <Label class="pt-1">{{ t('settings.themeLabel') }}</Label>
             <div
               class="flex w-full max-w-[28rem] items-center justify-between gap-4 rounded-lg border bg-card p-4"
             >
@@ -176,26 +260,26 @@ onMounted(() => {
                   <Moon class="size-4" />
                 </div>
                 <p class="text-xs leading-5 text-muted-foreground">
-                  Переключение между светлой и темной темой.
+                  {{ t('settings.themeHint') }}
                 </p>
               </div>
-              <Switch v-model="isDarkTheme" aria-label="Темная тема" />
+              <Switch v-model="isDarkTheme" :aria-label="t('settings.themeSwitchAria')" />
             </div>
           </div>
 
           <div class="grid gap-2 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
-            <Label class="pt-1">Backend</Label>
+            <Label class="pt-1">{{ t('settings.backendLabel') }}</Label>
             <div class="grid w-full max-w-[28rem] gap-2 rounded-lg border bg-card p-4">
               <div class="flex flex-wrap items-center gap-2">
                 <Badge :variant="health?.status === 'ok' ? 'secondary' : 'outline'">
-                  {{ formatTechnicalStatus(health?.status) }}
+                  {{ formatStatusLabel(health?.status) }}
                 </Badge>
                 <span class="text-sm text-muted-foreground">
-                  {{ health?.version ? `v${health.version}` : 'версия не получена' }}
+                  {{ health?.version ? `v${health.version}` : t('settings.versionUnavailable') }}
                 </span>
               </div>
               <p class="text-xs leading-5 text-muted-foreground">
-                Последняя проверка: {{ formatDateTime(health?.time) }}
+                {{ t('settings.lastCheck', { value: formatDateTime(health?.time) }) }}
               </p>
             </div>
           </div>
@@ -204,7 +288,7 @@ onMounted(() => {
 
       <Card>
         <CardHeader class="flex flex-row items-center justify-between gap-3">
-          <CardTitle class="text-base">Интеграции</CardTitle>
+          <CardTitle class="text-base">{{ t('settings.integrationsTitle') }}</CardTitle>
           <Button
             variant="outline"
             size="sm"
@@ -212,27 +296,27 @@ onMounted(() => {
             @click="refreshIntegrations"
           >
             <RefreshCw class="size-4" :class="loadingIntegrations && 'animate-spin'" />
-            Обновить
+            {{ t('settings.refresh') }}
           </Button>
         </CardHeader>
         <CardContent class="grid gap-3">
           <div
-            v-if="integrationsError"
+            v-if="translatedIntegrationsError"
             class="rounded-lg border border-dashed p-3 text-sm text-muted-foreground"
           >
-            {{ integrationsError }}
+            {{ translatedIntegrationsError }}
           </div>
           <div
             v-else-if="loadingIntegrations && !integrations.length"
             class="rounded-lg border border-dashed p-3 text-sm text-muted-foreground"
           >
-            Загружаем статусы интеграций...
+            {{ t('settings.loadingIntegrations') }}
           </div>
           <div
             v-else-if="!integrations.length"
             class="rounded-lg border border-dashed p-3 text-sm text-muted-foreground"
           >
-            Backend не вернул список интеграций.
+            {{ t('settings.integrationsEmpty') }}
           </div>
           <div
             v-for="integration in integrations"
@@ -249,18 +333,22 @@ onMounted(() => {
                   class="size-4 shrink-0"
                 />
                 <span class="truncate text-sm font-medium text-foreground">{{
-                  formatIntegrationName(integration.name)
+                  formatIntegrationLabel(integration.name)
                 }}</span>
               </div>
               <Badge :variant="integration.enabled ? 'secondary' : 'outline'" class="shrink-0">
-                {{ integration.enabled ? 'Подключено' : 'Отключено' }}
+                {{ integration.enabled ? t('settings.connected') : t('settings.disconnected') }}
               </Badge>
             </div>
             <div class="grid gap-1 text-xs leading-5 text-muted-foreground">
-              <span>Источник: {{ formatDataSource(integration.source) }}</span>
-              <span>Резерв: {{ formatDataSource(integration.fallback) }}</span>
-              <span>Состояние: {{ formatTechnicalStatus(integration.status) }}</span>
-              <span>Последняя проверка: {{ formatDateTime(integration.last_check_at) }}</span>
+              <span>{{ t('settings.source') }}: {{ formatSourceName(integration.source) }}</span>
+              <span
+                >{{ t('settings.fallback') }}: {{ formatSourceName(integration.fallback) }}</span
+              >
+              <span>{{ t('settings.status') }}: {{ formatStatusLabel(integration.status) }}</span>
+              <span>{{
+                t('settings.lastCheck', { value: formatDateTime(integration.last_check_at) })
+              }}</span>
             </div>
           </div>
         </CardContent>
@@ -271,7 +359,7 @@ onMounted(() => {
       <CardHeader>
         <CardTitle class="flex items-center gap-2 text-base">
           <Database class="size-4 text-primary" />
-          Источники данных модели
+          {{ t('settings.dataSourcesTitle') }}
         </CardTitle>
       </CardHeader>
       <CardContent class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -279,7 +367,7 @@ onMounted(() => {
           v-if="!dataSources.length"
           class="rounded-lg border border-dashed p-3 text-sm text-muted-foreground md:col-span-2 xl:col-span-3"
         >
-          Источники данных появятся после ответа /api/integrations/status.
+          {{ t('settings.dataSourcesEmpty') }}
         </div>
         <div v-for="source in dataSources" :key="source.label" class="rounded-lg border p-3">
           <div class="flex items-center justify-between gap-3">

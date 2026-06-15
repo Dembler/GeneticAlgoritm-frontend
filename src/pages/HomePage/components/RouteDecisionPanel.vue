@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle } from 'lucide-vue-next'
 
 import { Badge, Card, CardContent, CardHeader, CardTitle } from '@/shared/ui'
 import type { RouteResponse } from '@/shared/api/route.types'
+import { formatMoney, formatNumber, formatPercent } from '@/shared/lib/format/number'
 import { formatImprovement, translateBackendText } from '@/shared/lib/format/routePresentation'
 
 const props = defineProps<{
@@ -17,6 +18,13 @@ const comparisonImprovement = computed(() => props.result.comparison?.improvemen
 const decisionSummary = computed(() => props.result.comparison_summary)
 const decisionExplanation = computed(() => props.result.decision_explanation)
 const diagnostics = computed(() => props.result.diagnostics)
+const baselineMetrics = computed(
+  () =>
+    props.result.comparison?.baseline_metrics ?? props.result.comparison_summary?.baseline?.metrics,
+)
+const currency = computed(
+  () => props.result.operational_cost?.currency ?? props.result.fuel_cost?.currency ?? 'RUB',
+)
 
 const hasConstraints = computed(() => {
   const current = metrics.value
@@ -75,6 +83,143 @@ const reasons = computed(() => {
 
   return items
 })
+
+function percentLowerIsBetter(
+  baseline: number | null | undefined,
+  current: number | null | undefined,
+) {
+  if (
+    baseline === null ||
+    baseline === undefined ||
+    current === null ||
+    current === undefined ||
+    !Number.isFinite(baseline) ||
+    !Number.isFinite(current) ||
+    Math.abs(baseline) < 0.000001
+  ) {
+    return null
+  }
+
+  return ((baseline - current) / Math.abs(baseline)) * 100
+}
+
+function percentHigherIsBetter(
+  baseline: number | null | undefined,
+  current: number | null | undefined,
+) {
+  if (
+    baseline === null ||
+    baseline === undefined ||
+    current === null ||
+    current === undefined ||
+    !Number.isFinite(baseline) ||
+    !Number.isFinite(current) ||
+    Math.abs(baseline) < 0.000001
+  ) {
+    return null
+  }
+
+  return ((current - baseline) / Math.abs(baseline)) * 100
+}
+
+function totalRiskScore(current: NonNullable<typeof metrics.value>) {
+  return (
+    current.safety_risk +
+    current.weather_risk +
+    current.cargo_risk +
+    current.road_quality_risk +
+    current.incident_risk +
+    current.roadwork_risk +
+    current.dynamic_event_risk
+  )
+}
+
+function reliabilityScore(current: NonNullable<typeof metrics.value>) {
+  return current.route_reliability_score ?? current.reliability_score
+}
+
+function contributionText(value: number | null, positiveWord: string, negativeWord: string) {
+  if (value === null) {
+    return null
+  }
+
+  if (Math.abs(value) < 0.05) {
+    return 'без заметного изменения'
+  }
+
+  return `${value >= 0 ? positiveWord : negativeWord} на ${formatImprovement(Math.abs(value), 1)}`
+}
+
+const criterionContributions = computed(() => {
+  const current = metrics.value
+  const baseline = baselineMetrics.value
+
+  if (!current) {
+    return []
+  }
+
+  const fuelImprovement = percentLowerIsBetter(baseline?.fuel_liters, current.fuel_liters)
+  const riskImprovement = baseline
+    ? percentLowerIsBetter(totalRiskScore(baseline), totalRiskScore(current))
+    : null
+  const reliabilityImprovement = baseline
+    ? percentHigherIsBetter(reliabilityScore(baseline), reliabilityScore(current))
+    : null
+
+  return [
+    {
+      label: 'Расстояние',
+      value:
+        contributionText(comparisonImprovement.value?.distance_km ?? null, 'короче', 'длиннее') ??
+        `${formatNumber(current.distance_km, 1)} км`,
+      detail: 'влияет на пробег и ресурс транспорта',
+      positive: (comparisonImprovement.value?.distance_km ?? 0) >= 0,
+    },
+    {
+      label: 'Время',
+      value:
+        contributionText(comparisonImprovement.value?.duration_min ?? null, 'быстрее', 'дольше') ??
+        `${formatNumber(current.duration_min, 0)} мин`,
+      detail: 'учитывает скорость, трафик и задержки',
+      positive: (comparisonImprovement.value?.duration_min ?? 0) >= 0,
+    },
+    {
+      label: 'Стоимость',
+      value:
+        contributionText(
+          comparisonImprovement.value?.operational_cost ?? null,
+          'дешевле',
+          'дороже',
+        ) ?? formatMoney(current.operational_cost, currency.value, true),
+      detail: 'топливо, водитель, обслуживание и платные дороги',
+      positive: (comparisonImprovement.value?.operational_cost ?? 0) >= 0,
+    },
+    {
+      label: 'Топливо',
+      value:
+        contributionText(fuelImprovement, 'меньше расход', 'больше расход') ??
+        `${formatNumber(current.fuel_liters, 1)} л`,
+      detail: 'снижает расход и связанные выбросы',
+      positive: (fuelImprovement ?? 0) >= 0,
+    },
+    {
+      label: 'Риск',
+      value:
+        contributionText(riskImprovement, 'ниже риск', 'выше риск') ??
+        `${formatNumber(totalRiskScore(current), 2)} индекс`,
+      detail: 'дороги, погода, события и грузовые ограничения',
+      positive: (riskImprovement ?? 0) >= 0 && current.feasible,
+    },
+    {
+      label: 'Надежность',
+      value:
+        contributionText(reliabilityImprovement, 'выше', 'ниже') ??
+        `${formatPercent(reliabilityScore(current) * 100, 0)}`,
+      detail: 'вероятность стабильного прохождения маршрута',
+      positive: (reliabilityImprovement ?? 0) >= 0,
+    },
+  ]
+})
 </script>
 
 <template>
@@ -110,6 +255,22 @@ const reasons = computed(() => {
         исходный маршрут.
       </div>
 
+      <div class="mb-3">
+        <p class="mb-2 text-xs font-medium uppercase text-muted-foreground">Вклад критериев</p>
+        <div class="criterion-grid">
+          <div
+            v-for="criterion in criterionContributions"
+            :key="criterion.label"
+            class="criterion-card"
+            :class="criterion.positive ? 'criterion-card--positive' : 'criterion-card--negative'"
+          >
+            <span>{{ criterion.label }}</span>
+            <strong>{{ criterion.value }}</strong>
+            <small>{{ criterion.detail }}</small>
+          </div>
+        </div>
+      </div>
+
       <div class="decision-grid">
         <div v-for="reason in reasons" :key="reason.text" class="decision-row">
           <component :is="reason.positive ? CheckCircle2 : XCircle" class="size-4" />
@@ -131,6 +292,49 @@ const reasons = computed(() => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
   gap: 0.625rem;
+}
+
+.criterion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.625rem;
+}
+
+.criterion-card {
+  display: grid;
+  min-width: 0;
+  gap: 0.375rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: color-mix(in oklch, var(--background) 72%, transparent);
+  padding: 0.75rem;
+}
+
+.criterion-card span {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.criterion-card strong {
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+
+.criterion-card small {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.criterion-card--positive {
+  border-color: color-mix(in oklch, var(--positive-foreground) 34%, var(--border));
+}
+
+.criterion-card--negative {
+  border-color: color-mix(in oklch, var(--negative-foreground) 38%, var(--border));
 }
 
 .decision-row {

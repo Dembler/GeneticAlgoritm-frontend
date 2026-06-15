@@ -20,7 +20,7 @@ export const vehicleLabels: Record<VehicleClass, string> = {
 }
 
 export const priorityLabels = {
-  balanced: 'Баланс',
+  balanced: 'Сбалансированный режим',
   fastest: 'Скорость',
   cheapest: 'Стоимость',
   greenest: 'Экономия топлива',
@@ -31,13 +31,13 @@ export const priorityOptions = Object.entries(priorityLabels) as Array<
 >
 
 export const optimizationModeLabels: Record<OptimizationMode, string> = {
-  weighted: 'Взвешенный режим',
-  pareto: 'Парето',
+  weighted: 'Взвешенная оценка',
+  pareto: 'Парето-подход',
 }
 
 export const strategyLabels: Record<OptimizationStrategy, string> = {
-  strict: 'Строгий отбор',
-  balanced: 'Баланс',
+  strict: 'Строгий режим',
+  balanced: 'Сбалансированный режим',
   custom: 'Свои веса',
   'user-driven': 'Пользовательский режим',
 }

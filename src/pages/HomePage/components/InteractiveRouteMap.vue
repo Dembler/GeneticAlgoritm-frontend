@@ -226,7 +226,7 @@ function riskInsightColor(insight: RouteSegmentInsight) {
     return insight.map_color_hex
   }
 
-  return insight.severity_score >= 0.7 ? 'var(--destructive)' : 'var(--negative-foreground)'
+  return insight.severity_score >= 0.7 ? 'hsl(18 90% 52%)' : 'hsl(36 92% 50%)'
 }
 
 function sourcePointIndex(point: Point) {
@@ -291,7 +291,7 @@ function createMarkerIcon(markerPoint: MarkerPoint, isResultPoint: boolean) {
 
   return L.divIcon({
     className: 'route-marker-icon',
-    html: `<span class="route-marker-icon__inner ${isResultPoint ? 'route-marker-icon__inner--result' : ''}"><strong>${markerPoint.routeOrder}</strong>${sourceBadge}</span>`,
+    html: `<span class="route-marker-icon__inner route-marker-icon__inner--tone-${(markerPoint.routeOrder - 1) % 4} ${isResultPoint ? 'route-marker-icon__inner--result' : ''}"><strong>${markerPoint.routeOrder}</strong>${sourceBadge}</span>`,
     iconSize: [44, 36],
     iconAnchor: [22, 18],
   })
@@ -300,24 +300,24 @@ function createMarkerIcon(markerPoint: MarkerPoint, isResultPoint: boolean) {
 function layerStyle(kind: LayerKind): L.PolylineOptions {
   if (kind === 'baseline') {
     return {
-      color: 'var(--muted-foreground)',
+      color: 'hsl(220 12% 42%)',
       dashArray: '8 12',
-      opacity: 0.78,
+      opacity: 0.82,
       weight: 5,
     }
   }
 
   if (kind === 'alternative') {
     return {
-      color: 'var(--chart-2)',
-      opacity: 0.9,
+      color: 'hsl(262 75% 56%)',
+      opacity: 0.88,
       weight: 5,
     }
   }
 
   if (kind === 'cvrp') {
     return {
-      color: 'var(--chart-4)',
+      color: 'hsl(31 92% 50%)',
       opacity: 0.86,
       weight: 4,
     }
@@ -325,7 +325,7 @@ function layerStyle(kind: LayerKind): L.PolylineOptions {
 
   if (kind === 'draft') {
     return {
-      color: 'var(--chart-3)',
+      color: 'hsl(208 76% 45%)',
       dashArray: '4 10',
       opacity: 0.86,
       weight: 4,
@@ -333,7 +333,7 @@ function layerStyle(kind: LayerKind): L.PolylineOptions {
   }
 
   return {
-    color: 'var(--primary)',
+    color: 'hsl(164 76% 30%)',
     opacity: 0.96,
     weight: 7,
   }
@@ -655,7 +655,7 @@ watch(
 <style scoped>
 .interactive-map-shell {
   position: absolute;
-  inset: 0;
+  inset: var(--route-map-inset, 0);
   z-index: 0;
   overflow: hidden;
   border-radius: inherit;
@@ -667,21 +667,25 @@ watch(
   height: 100%;
 }
 
+.interactive-map :deep(.leaflet-tile-pane) {
+  filter: saturate(1.1) contrast(1.02) brightness(1.02);
+}
+
 .map-help {
   position: absolute;
   right: 1rem;
   bottom: 1rem;
   z-index: 500;
   max-width: min(28rem, calc(100% - 2rem));
-  border: 1px solid var(--border);
+  border: 1px solid hsl(0 0% 0% / 0.1);
   border-radius: 999px;
-  background: color-mix(in oklch, var(--card) 92%, transparent);
+  background: hsl(0 0% 100% / 0.9);
   padding: 0.5rem 0.875rem;
-  color: var(--muted-foreground);
+  color: hsl(0 0% 28%);
   font-size: 0.75rem;
   line-height: 1rem;
-  box-shadow: 0 12px 28px hsl(0 0% 0% / 0.08);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 24px hsl(0 0% 0% / 0.08);
+  backdrop-filter: blur(12px);
 }
 
 .route-legend {
@@ -692,14 +696,14 @@ watch(
   display: grid;
   min-width: min(24rem, calc(100% - 2rem));
   gap: 0.5rem;
-  border: 1px solid var(--border);
+  border: 1px solid hsl(0 0% 0% / 0.1);
   border-radius: 0.875rem;
-  background: color-mix(in oklch, var(--card) 94%, transparent);
+  background: hsl(0 0% 100% / 0.9);
   padding: 0.75rem;
   color: var(--foreground);
   font-size: 0.75rem;
-  box-shadow: 0 12px 28px hsl(0 0% 0% / 0.08);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 24px hsl(0 0% 0% / 0.08);
+  backdrop-filter: blur(12px);
 }
 
 .route-legend__row {
@@ -711,7 +715,7 @@ watch(
 
 .route-legend__line {
   height: 0;
-  border-top: 5px solid var(--primary);
+  border-top: 5px solid hsl(0 0% 7%);
   border-radius: 999px;
 }
 
@@ -767,21 +771,21 @@ watch(
 
 :deep(.leaflet-control-zoom) {
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid hsl(0 0% 0% / 0.12);
   border-radius: 0.875rem;
   box-shadow: 0 12px 30px hsl(0 0% 0% / 0.08);
 }
 
 :deep(.leaflet-control-zoom a) {
   border: 0;
-  background: var(--card);
-  color: var(--foreground);
+  background: hsl(0 0% 100% / 0.86);
+  color: hsl(0 0% 6%);
 }
 
 :deep(.leaflet-control-attribution) {
   border-radius: 999px 0 0 0;
-  background: color-mix(in oklch, var(--card) 88%, transparent);
-  color: var(--muted-foreground);
+  background: hsl(0 0% 100% / 0.72);
+  color: hsl(0 0% 34%);
   font-size: 0.625rem;
 }
 
@@ -797,8 +801,8 @@ watch(
   place-items: center;
   border: 3px solid var(--background);
   border-radius: 999px;
-  background: var(--primary);
-  color: var(--primary-foreground);
+  background: hsl(0 0% 14%);
+  color: hsl(0 0% 100%);
   font-weight: 700;
   line-height: 1;
   box-shadow: 0 10px 28px hsl(0 0% 0% / 0.24);
@@ -814,8 +818,12 @@ watch(
   font-weight: 600;
 }
 
-:deep(.route-marker-icon__inner--result) {
-  background: var(--chart-3);
+:deep(.route-marker-icon__inner--result),
+:deep(.route-marker-icon__inner--tone-0),
+:deep(.route-marker-icon__inner--tone-1),
+:deep(.route-marker-icon__inner--tone-2),
+:deep(.route-marker-icon__inner--tone-3) {
+  background: hsl(0 0% 12%);
 }
 
 @media (max-width: 1180px) {

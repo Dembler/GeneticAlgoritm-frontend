@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { Loader2, Search, Trash2 } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { ArrowDown, ArrowUp, Loader2, Search, Trash2 } from 'lucide-vue-next'
 
 import { Badge, Button, Input, Label } from '@/shared/ui'
 import type { Point } from '@/shared/api/route.types'
@@ -11,13 +12,18 @@ const props = defineProps<{
   point: Point
   index: number
   canRemove: boolean
+  canMoveUp: boolean
+  canMoveDown: boolean
 }>()
 
 const emit = defineEmits<{
   update: [point: Point]
   remove: []
+  'move-up': []
+  'move-down': []
 }>()
 
+const { t } = useI18n({ useScope: 'global' })
 const query = ref(props.point.label ?? '')
 const { suggestions, loading, error, searchAddress, clearSuggestions } = useAddressSearch()
 const maxPointLabelLength = 64
@@ -74,15 +80,47 @@ function numberFromEvent(event: Event, fallback: number) {
 <template>
   <div class="grid gap-3 rounded-xl border bg-card/90 p-3 text-sm shadow-sm">
     <div class="flex items-center justify-between gap-3">
-      <Badge variant="secondary">Точка {{ index + 1 }}</Badge>
-      <Button variant="ghost" size="icon-sm" :disabled="!canRemove" @click="emit('remove')">
-        <Trash2 class="size-3.5" />
-        <span class="sr-only">Удалить точку</span>
-      </Button>
+      <Badge variant="secondary">{{ t('pointInput.pointNumber', { number: index + 1 }) }}</Badge>
+
+      <div class="flex shrink-0 items-center gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          :disabled="!canMoveUp"
+          :aria-label="t('pointInput.moveUp')"
+          @click="emit('move-up')"
+        >
+          <ArrowUp class="size-3.5" />
+          <span class="sr-only">{{ t('pointInput.moveUp') }}</span>
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          :disabled="!canMoveDown"
+          :aria-label="t('pointInput.moveDown')"
+          @click="emit('move-down')"
+        >
+          <ArrowDown class="size-3.5" />
+          <span class="sr-only">{{ t('pointInput.moveDown') }}</span>
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          :disabled="!canRemove"
+          :aria-label="t('pointInput.delete')"
+          @click="emit('remove')"
+        >
+          <Trash2 class="size-3.5" />
+          <span class="sr-only">{{ t('pointInput.delete') }}</span>
+        </Button>
+      </div>
     </div>
 
     <div class="relative grid gap-2">
-      <Label class="text-xs text-muted-foreground">Адрес</Label>
+      <Label class="text-xs text-muted-foreground">{{ t('pointInput.address') }}</Label>
       <div class="relative">
         <Search
           class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -90,7 +128,7 @@ function numberFromEvent(event: Event, fallback: number) {
         <Input
           :value="query"
           class="h-9 pl-9"
-          placeholder="Начните вводить адрес"
+          :placeholder="t('pointInput.addressPlaceholder')"
           @input="updateAddress(($event.target as HTMLInputElement).value)"
         />
         <Loader2
@@ -118,7 +156,7 @@ function numberFromEvent(event: Event, fallback: number) {
 
     <div class="grid grid-cols-2 gap-2">
       <div class="grid gap-2">
-        <Label class="text-xs text-muted-foreground">Широта</Label>
+        <Label class="text-xs text-muted-foreground">{{ t('pointInput.latitude') }}</Label>
         <Input
           :value="point.lat"
           class="h-9"
@@ -129,7 +167,7 @@ function numberFromEvent(event: Event, fallback: number) {
         />
       </div>
       <div class="grid gap-2">
-        <Label class="text-xs text-muted-foreground">Долгота</Label>
+        <Label class="text-xs text-muted-foreground">{{ t('pointInput.longitude') }}</Label>
         <Input
           :value="point.lon"
           class="h-9"

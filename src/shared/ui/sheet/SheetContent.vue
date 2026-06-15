@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DialogContentEmits, DialogContentProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Cross2Icon } from '@radix-icons/vue'
 import { reactiveOmit } from '@vueuse/core'
 import { DialogClose, DialogContent, DialogPortal, useForwardPropsEmits } from 'reka-ui'
@@ -20,6 +21,7 @@ const props = withDefaults(defineProps<SheetContentProps>(), {
   side: 'right',
 })
 const emits = defineEmits<DialogContentEmits>()
+const { t } = useI18n({ useScope: 'global' })
 
 const delegatedProps = reactiveOmit(props, 'class', 'side')
 
@@ -53,7 +55,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
         class="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
       >
         <Cross2Icon class="size-4" />
-        <span class="sr-only">Закрыть</span>
+        <span class="sr-only">{{ t('common.close') }}</span>
       </DialogClose>
     </DialogContent>
   </DialogPortal>

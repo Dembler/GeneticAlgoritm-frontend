@@ -96,7 +96,7 @@ export const routeRequestSchema = z
     if (value.cvrp.depot_index >= value.points.length) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'CVRP depot_index должен ссылаться на существующую точку.',
+        message: 'Стартовая точка многомашинной доставки должна быть в списке точек.',
         path: ['cvrp', 'depot_index'],
       })
     }
@@ -104,7 +104,7 @@ export const routeRequestSchema = z
     if (value.cvrp.point_demands_t.length > value.points.length) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'CVRP demands не может быть длиннее списка точек.',
+        message: 'Список грузов по точкам не может быть длиннее списка точек маршрута.',
         path: ['cvrp', 'point_demands_t'],
       })
     }

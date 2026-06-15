@@ -32,19 +32,17 @@ const navigationItems = [
 
 <template>
   <aside class="service-sidebar">
-    <div class="flex items-center gap-3 px-3">
-      <div
-        class="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm"
-      >
+    <div class="sidebar-brand flex items-start gap-2.5 px-2">
+      <div class="sidebar-logo flex size-10 items-center justify-center rounded-lg">
         <Map class="size-5" />
       </div>
       <div class="min-w-0">
-        <p class="truncate text-sm font-semibold text-foreground">{{ t('common.appName') }}</p>
-        <p class="truncate text-xs text-muted-foreground">{{ t('common.appSubtitle') }}</p>
+        <p class="text-sm font-semibold">{{ t('common.appName') }}</p>
+        <p class="text-xs leading-4">{{ t('common.appSubtitle') }}</p>
       </div>
     </div>
 
-    <nav class="mt-8 flex flex-col gap-1 px-2">
+    <nav class="mt-6 flex flex-col gap-1 px-1.5">
       <Button
         v-for="item in navigationItems"
         :key="item.id"
@@ -52,9 +50,8 @@ const navigationItems = [
         :disabled="item.id === 'analysis' && !analysisAvailable"
         :class="
           cn(
-            'h-10 justify-start gap-3 rounded-lg px-3 text-sm text-muted-foreground',
-            activeSection === item.id &&
-              'bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary',
+            'sidebar-nav-button h-10 justify-start gap-2.5 rounded-lg px-2.5 text-sm',
+            activeSection === item.id && 'sidebar-nav-button--active',
           )
         "
         @click="emit('select', item.id)"
@@ -65,11 +62,11 @@ const navigationItems = [
     </nav>
 
     <div class="mt-auto px-3">
-      <div class="rounded-xl border bg-card p-3 shadow-sm">
+      <div class="sidebar-status-card rounded-xl p-3">
         <div class="flex items-center justify-between gap-3">
           <div>
-            <p class="text-xs font-medium text-foreground">{{ t('sidebar.currentRequest') }}</p>
-            <p class="mt-1 text-xs leading-5 text-muted-foreground">
+            <p class="text-xs font-medium">{{ t('sidebar.currentRequest') }}</p>
+            <p class="mt-1 text-xs leading-5">
               {{ t('sidebar.currentRequestDescription') }}
             </p>
           </div>
@@ -84,12 +81,74 @@ const navigationItems = [
 .service-sidebar {
   position: sticky;
   top: 0;
+  isolation: isolate;
   height: 100vh;
   width: 14.5rem;
   flex-direction: column;
-  border-right: 1px solid var(--border);
-  background: color-mix(in oklch, var(--card) 94%, var(--background) 6%);
+  overflow: hidden;
+  border-right: 1px solid hsl(0 0% 100% / 0.13);
+  background: hsl(0 0% 5%);
+  color: hsl(0 0% 98%);
   padding: 1.25rem 0.75rem;
-  box-shadow: 0 18px 50px hsl(0 0% 0% / 0.04);
+  box-shadow:
+    inset -1px 0 0 hsl(0 0% 100% / 0.08),
+    18px 0 44px hsl(0 0% 0% / 0.16);
+}
+
+.sidebar-brand {
+  color: hsl(0 0% 98%);
+}
+
+.sidebar-brand p:first-child {
+  line-height: 1.25rem;
+}
+
+.sidebar-brand p:last-child {
+  color: hsl(0 0% 100% / 0.66);
+}
+
+.sidebar-logo {
+  border: 1px solid hsl(0 0% 100% / 0.2);
+  background: hsl(0 0% 100% / 0.1);
+  color: hsl(0 0% 100%);
+  box-shadow: none;
+}
+
+.sidebar-nav-button {
+  position: relative;
+  border: 1px solid transparent;
+  color: hsl(0 0% 100% / 0.78);
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.sidebar-nav-button:hover {
+  border-color: hsl(0 0% 100% / 0.14);
+  background: hsl(0 0% 100% / 0.07);
+  color: hsl(0 0% 100% / 0.95);
+}
+
+.sidebar-nav-button--active,
+.sidebar-nav-button--active:hover {
+  border-color: hsl(0 0% 100% / 0.22);
+  background: hsl(0 0% 22% / 0.76);
+  color: hsl(0 0% 100%);
+  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.sidebar-status-card {
+  border: 1px solid hsl(0 0% 100% / 0.16);
+  background: hsl(0 0% 100% / 0.08);
+  color: hsl(0 0% 98%);
+  box-shadow: none;
+}
+
+.sidebar-status-card p:last-child {
+  color: hsl(0 0% 100% / 0.72);
 }
 </style>

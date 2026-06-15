@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import {
   AlertTriangle,
   Boxes,
@@ -11,7 +12,7 @@ import {
   Truck,
 } from 'lucide-vue-next'
 
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/shared/ui'
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@/shared/ui'
 import type { RouteRequest } from '@/shared/api/route.types'
 
 import { createDefaultRouteDraft } from '../model/defaultRouteDraft'
@@ -29,9 +30,6 @@ type ScenarioId =
 
 type Scenario = {
   id: ScenarioId
-  title: string
-  description: string
-  effect: string
   enabled: boolean
   icon: typeof Route
 }
@@ -41,76 +39,51 @@ const emit = defineEmits<{
   runScenario: [draft: RouteRequest]
 }>()
 
+const { t } = useI18n({ useScope: 'global' })
+
 const scenarios: Scenario[] = [
   {
     id: 'balanced',
-    title: 'Обычная доставка',
-    description: 'Баланс расстояния, времени и полной стоимости.',
-    effect: 'Стабильный маршрут без жестких ограничений.',
     enabled: true,
     icon: Route,
   },
   {
     id: 'urgent',
-    title: 'Срочная доставка',
-    description: 'Вес смещается к времени и трафику.',
-    effect: 'Приоритет быстрого прибытия.',
     enabled: true,
     icon: Timer,
   },
   {
     id: 'cheap',
-    title: 'Минимальная стоимость',
-    description: 'Система снижает топливо, платные дороги и полную стоимость.',
-    effect: 'Дешевле при допустимых ограничениях.',
     enabled: true,
     icon: Scale,
   },
   {
     id: 'green',
-    title: 'Экономия топлива',
-    description: 'Выбор коротких и менее энергозатратных участков.',
-    effect: 'Профиль с учетом топлива и выбросов CO2.',
     enabled: true,
     icon: Leaf,
   },
   {
     id: 'heavy',
-    title: 'Тяжелый груз',
-    description: 'Проверка грузоподъемности, массы и полной стоимости.',
-    effect: 'Контроль перегруза.',
     enabled: true,
     icon: Boxes,
   },
   {
     id: 'truck-restricted',
-    title: 'Грузовик с ограничениями',
-    description: 'Высота, масса, ширина и длина влияют на доступность.',
-    effect: 'Обход запрещенных участков.',
     enabled: true,
     icon: Truck,
   },
   {
     id: 'cvrp',
-    title: 'Многомашинная доставка',
-    description: 'Разделение точек между машинами.',
-    effect: 'Визуальный план загрузки.',
     enabled: true,
     icon: Flame,
   },
   {
     id: 'pareto',
-    title: 'Парето-альтернативы',
-    description: 'Сравнение вариантов по времени, стоимости и расстоянию.',
-    effect: 'Несколько объяснимых вариантов.',
     enabled: true,
     icon: Scale,
   },
   {
     id: 'strict',
-    title: 'Строгие ограничения',
-    description: 'Показываются штрафы, недопустимость и защита исходного порядка.',
-    effect: 'Прозрачность ограничений.',
     enabled: true,
     icon: AlertTriangle,
   },
@@ -218,17 +191,15 @@ function runScenario(scenario: Scenario) {
 
 <template>
   <Card class="surface-card">
-    <CardHeader class="pb-3">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <CardTitle class="text-base">Сценарии демонстрации</CardTitle>
-        <Badge variant="secondary">9 активных</Badge>
-      </div>
+    <CardHeader class="scenario-header">
+      <CardTitle class="scenario-section-title">{{ t('scenarios.title') }}</CardTitle>
+      <p class="scenario-section-description">{{ t('scenarios.description') }}</p>
     </CardHeader>
-    <CardContent>
+    <CardContent class="scenario-content">
       <div class="scenario-grid">
         <article
           v-for="scenario in scenarios"
-          :key="scenario.title"
+          :key="scenario.id"
           class="scenario-card"
           :class="!scenario.enabled && 'scenario-card--disabled'"
         >
@@ -237,35 +208,30 @@ function runScenario(scenario: Scenario) {
               <component :is="scenario.icon" class="size-4" />
             </span>
             <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <h3>{{ scenario.title }}</h3>
-                <Badge v-if="scenario.enabled" variant="secondary">Готово</Badge>
-              </div>
-              <p>{{ scenario.description }}</p>
-              <Badge variant="outline" class="mt-2 whitespace-normal text-left">
-                {{ scenario.effect }}
-              </Badge>
+              <h3>{{ t(`scenarios.items.${scenario.id}.title`) }}</h3>
+              <p class="scenario-description">
+                {{ t(`scenarios.items.${scenario.id}.description`) }}
+                {{ t(`scenarios.items.${scenario.id}.effect`) }}
+              </p>
             </div>
           </div>
           <div class="scenario-actions">
             <Button
               variant="outline"
-              size="sm"
-              class="rounded-lg"
+              class="scenario-button rounded-lg"
               :disabled="!scenario.enabled"
               @click="applyScenario(scenario)"
             >
-              Настроить
+              {{ t('scenarios.apply') }}
             </Button>
             <Button
-              size="sm"
-              class="rounded-lg"
+              class="scenario-button rounded-lg"
               :variant="scenario.enabled ? 'default' : 'outline'"
               :disabled="!scenario.enabled"
               @click="runScenario(scenario)"
             >
               <Play class="size-3.5" />
-              {{ scenario.enabled ? 'Запустить' : 'Скоро' }}
+              {{ scenario.enabled ? t('scenarios.run') : t('scenarios.soon') }}
             </Button>
           </div>
         </article>
@@ -276,14 +242,37 @@ function runScenario(scenario: Scenario) {
 
 <style scoped>
 .surface-card {
-  background: color-mix(in oklch, var(--card) 90%, transparent);
-  box-shadow: 0 16px 45px hsl(0 0% 0% / 0.055);
-  backdrop-filter: blur(12px);
+  gap: 0;
+  border-color: var(--border);
+  background: var(--card);
+  padding-block: 0;
+  box-shadow: 0 12px 32px hsl(0 0% 0% / 0.045);
+}
+
+.scenario-header {
+  padding: 1.5rem 1.5rem 0.75rem;
+}
+
+.scenario-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+}
+
+.scenario-section-description {
+  max-width: 46rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.35rem;
+}
+
+.scenario-content {
+  padding: 0.75rem 1.5rem 1.5rem;
 }
 
 .scenario-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
   gap: 0.75rem;
 }
 
@@ -291,29 +280,36 @@ function runScenario(scenario: Scenario) {
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
   align-items: flex-start;
-  gap: 0.75rem;
+  gap: 1rem;
   border: 1px solid var(--border);
   border-radius: 0.75rem;
-  background: color-mix(in oklch, var(--background) 70%, transparent);
-  padding: 0.875rem;
+  background: var(--background);
+  padding: 1rem;
+  box-shadow: none;
 }
 
 .scenario-card--disabled {
-  background: color-mix(in oklch, var(--muted) 42%, transparent);
+  background: var(--muted);
 }
 
 .scenario-card h3 {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 700;
+  line-height: 1.35rem;
   color: var(--foreground);
 }
 
-.scenario-card p {
-  margin-top: 0.25rem;
+.scenario-description {
+  display: -webkit-box;
+  margin-top: 0.375rem;
+  overflow: hidden;
   color: var(--muted-foreground);
-  font-size: 0.75rem;
-  line-height: 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.15rem;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .scenario-icon {
@@ -324,8 +320,10 @@ function runScenario(scenario: Scenario) {
   align-items: center;
   justify-content: center;
   border-radius: 0.625rem;
-  background: var(--secondary);
-  color: var(--primary);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: hsl(208 78% 45%);
+  box-shadow: none;
 }
 
 .scenario-actions {
@@ -333,6 +331,42 @@ function runScenario(scenario: Scenario) {
   flex-wrap: wrap;
   justify-content: flex-start;
   gap: 0.5rem;
+}
+
+.scenario-button {
+  height: 2.25rem;
+}
+
+.scenario-card:nth-child(2) .scenario-icon {
+  color: hsl(18 90% 52%);
+}
+
+.scenario-card:nth-child(3) .scenario-icon {
+  color: hsl(31 92% 50%);
+}
+
+.scenario-card:nth-child(4) .scenario-icon {
+  color: hsl(135 50% 36%);
+}
+
+.scenario-card:nth-child(5) .scenario-icon {
+  color: hsl(262 64% 54%);
+}
+
+.scenario-card:nth-child(6) .scenario-icon {
+  color: hsl(220 70% 48%);
+}
+
+.scenario-card:nth-child(7) .scenario-icon {
+  color: hsl(292 56% 48%);
+}
+
+.scenario-card:nth-child(8) .scenario-icon {
+  color: hsl(188 72% 38%);
+}
+
+.scenario-card:nth-child(9) .scenario-icon {
+  color: hsl(345 72% 48%);
 }
 
 @media (max-width: 640px) {

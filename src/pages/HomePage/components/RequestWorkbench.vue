@@ -131,7 +131,7 @@ function requiredNumberValue(event: Event, fallback: number) {
         <div class="min-w-0">
           <CardTitle class="flex items-center gap-2 text-base">
             <SlidersHorizontal data-icon="inline-start" />
-            Режим исследователя
+            Расширенные настройки
           </CardTitle>
           <CardDescription class="mt-1 leading-5">
             Технические параметры текущего запроса скрыты из обычного режима и доступны здесь.
@@ -160,8 +160,8 @@ function requiredNumberValue(event: Event, fallback: number) {
         <div class="border-y bg-muted/40 px-4 py-2">
           <TabsList class="grid h-auto w-full grid-cols-3">
             <TabsTrigger value="base">Запрос</TabsTrigger>
-            <TabsTrigger value="cargo">Транспорт</TabsTrigger>
-            <TabsTrigger value="weights">Веса и алгоритм</TabsTrigger>
+            <TabsTrigger value="cargo">Груз и машины</TabsTrigger>
+            <TabsTrigger value="weights">Критерии</TabsTrigger>
           </TabsList>
         </div>
 
@@ -349,7 +349,7 @@ function requiredNumberValue(event: Event, fallback: number) {
 
             <section class="grid gap-3 sm:grid-cols-2">
               <div class="flex flex-col gap-2">
-                <Label>Количество машин CVRP</Label>
+                <Label>Количество машин</Label>
                 <Input
                   :value="draft.cvrp.vehicle_count"
                   type="number"
@@ -362,7 +362,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                 />
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Индекс депо</Label>
+                <Label>Стартовая точка</Label>
                 <Input
                   :value="draft.cvrp.depot_index"
                   type="number"
@@ -398,79 +398,82 @@ function requiredNumberValue(event: Event, fallback: number) {
               />
             </section>
 
-            <Separator />
-
-            <section class="grid gap-3 sm:grid-cols-2">
-              <div class="flex flex-col gap-2">
-                <Label>Размер популяции</Label>
-                <Input
-                  :value="draft.population_size"
-                  type="number"
-                  min="24"
-                  max="400"
-                  step="1"
-                  @input="
-                    draft.population_size = requiredNumberValue($event, draft.population_size)
-                  "
-                />
-              </div>
-              <div class="flex flex-col gap-2">
-                <Label>Число поколений</Label>
-                <Input
-                  :value="draft.generations"
-                  type="number"
-                  min="20"
-                  max="800"
-                  step="1"
-                  @input="draft.generations = requiredNumberValue($event, draft.generations)"
-                />
-              </div>
-              <div class="flex flex-col gap-2">
-                <Label>Вероятность скрещивания</Label>
-                <Input
-                  :value="draft.crossover_rate"
-                  type="number"
-                  min="0.1"
-                  max="1"
-                  step="0.01"
-                  @input="draft.crossover_rate = requiredNumberValue($event, draft.crossover_rate)"
-                />
-              </div>
-              <div class="flex flex-col gap-2">
-                <Label>Вероятность мутации</Label>
-                <Input
-                  :value="draft.mutation_rate"
-                  type="number"
-                  min="0.01"
-                  max="0.9"
-                  step="0.01"
-                  @input="draft.mutation_rate = requiredNumberValue($event, draft.mutation_rate)"
-                />
-              </div>
-              <div class="flex flex-col gap-2">
-                <Label>Число альтернатив</Label>
-                <Input
-                  :value="draft.max_alternatives"
-                  type="number"
-                  min="1"
-                  max="20"
-                  step="1"
-                  @input="
-                    draft.max_alternatives = requiredNumberValue($event, draft.max_alternatives)
-                  "
-                />
-              </div>
-              <div class="flex flex-col gap-2">
-                <Label>Зерно генератора</Label>
-                <Input
-                  :value="draft.random_seed ?? ''"
-                  type="number"
-                  min="0"
-                  step="1"
-                  @input="draft.random_seed = nullableNumberValue($event)"
-                />
-              </div>
-            </section>
+            <details class="advanced-details">
+              <summary>Параметры генетического алгоритма</summary>
+              <section class="mt-3 grid gap-3 sm:grid-cols-2">
+                <div class="flex flex-col gap-2">
+                  <Label>Размер популяции</Label>
+                  <Input
+                    :value="draft.population_size"
+                    type="number"
+                    min="24"
+                    max="400"
+                    step="1"
+                    @input="
+                      draft.population_size = requiredNumberValue($event, draft.population_size)
+                    "
+                  />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <Label>Число поколений</Label>
+                  <Input
+                    :value="draft.generations"
+                    type="number"
+                    min="20"
+                    max="800"
+                    step="1"
+                    @input="draft.generations = requiredNumberValue($event, draft.generations)"
+                  />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <Label>Вероятность скрещивания</Label>
+                  <Input
+                    :value="draft.crossover_rate"
+                    type="number"
+                    min="0.1"
+                    max="1"
+                    step="0.01"
+                    @input="
+                      draft.crossover_rate = requiredNumberValue($event, draft.crossover_rate)
+                    "
+                  />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <Label>Вероятность мутации</Label>
+                  <Input
+                    :value="draft.mutation_rate"
+                    type="number"
+                    min="0.01"
+                    max="0.9"
+                    step="0.01"
+                    @input="draft.mutation_rate = requiredNumberValue($event, draft.mutation_rate)"
+                  />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <Label>Число альтернатив</Label>
+                  <Input
+                    :value="draft.max_alternatives"
+                    type="number"
+                    min="1"
+                    max="20"
+                    step="1"
+                    @input="
+                      draft.max_alternatives = requiredNumberValue($event, draft.max_alternatives)
+                    "
+                  />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <Label>Зерно генератора</Label>
+                  <Input
+                    :value="draft.random_seed ?? ''"
+                    type="number"
+                    min="0"
+                    step="1"
+                    @input="draft.random_seed = nullableNumberValue($event)"
+                  />
+                </div>
+              </section>
+            </details>
           </TabsContent>
         </ScrollArea>
       </Tabs>
@@ -502,3 +505,19 @@ function requiredNumberValue(event: Event, fallback: number) {
     </SheetContent>
   </Sheet>
 </template>
+
+<style scoped>
+.advanced-details {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: color-mix(in oklch, var(--background) 74%, transparent);
+  padding: 0.875rem;
+}
+
+.advanced-details summary {
+  cursor: pointer;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+</style>
