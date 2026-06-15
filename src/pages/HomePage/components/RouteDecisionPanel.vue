@@ -323,8 +323,11 @@ const criterionContributions = computed(() => {
   gap: 0.375rem;
   border: 1px solid color-mix(in oklch, var(--criterion-accent) 30%, var(--border));
   border-radius: 0.75rem;
-  background:
-    linear-gradient(180deg, color-mix(in oklch, var(--criterion-accent) 7%, var(--background)), var(--background) 76%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--criterion-accent) 7%, var(--background)),
+    var(--background) 76%
+  );
   padding: 0.75rem;
 }
 

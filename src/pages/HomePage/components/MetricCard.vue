@@ -26,8 +26,11 @@ defineProps<{
   --metric-accent: var(--chart-1);
   position: relative;
   border-color: color-mix(in oklch, var(--metric-accent) 32%, var(--border));
-  background:
-    linear-gradient(180deg, color-mix(in oklch, var(--metric-accent) 8%, var(--card)), var(--card) 64%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--metric-accent) 8%, var(--card)),
+    var(--card) 64%
+  );
   box-shadow: 0 14px 32px hsl(0 0% 0% / 0.055);
 }
 
