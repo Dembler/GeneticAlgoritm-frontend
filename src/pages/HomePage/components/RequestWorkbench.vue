@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Code2, Play, RefreshCw, SlidersHorizontal } from 'lucide-vue-next'
 
 import {
@@ -34,15 +35,6 @@ import {
 } from '@/shared/ui'
 import type { RouteRequest } from '@/shared/api/route.types'
 
-import {
-  criteriaLabels,
-  fuelLabels,
-  optimizationModeLabels,
-  priorityOptions,
-  profileLabels,
-  strategyLabels,
-  vehicleLabels,
-} from '../model/labels'
 import WeightSlider from './WeightSlider.vue'
 
 const draft = defineModel<RouteRequest | null>('draft', { required: true })
@@ -61,13 +53,34 @@ const emit = defineEmits<{
   resetDraft: []
 }>()
 
+const { t } = useI18n({ useScope: 'global' })
 const jsonOpen = ref(false)
 
-const profileOptions = Object.entries(profileLabels)
-const vehicleOptions = Object.entries(vehicleLabels)
-const strategyOptions = Object.entries(strategyLabels)
-const modeOptions = Object.entries(optimizationModeLabels)
-const fuelOptions = Object.entries(fuelLabels)
+const profileKeys = ['driving', 'walking', 'cycling'] as const
+const vehicleKeys = ['passenger', 'light_truck', 'heavy_truck'] as const
+const priorityKeys = ['balanced', 'fastest', 'cheapest', 'greenest'] as const
+const strategyKeys = ['strict', 'balanced', 'custom', 'user-driven'] as const
+const modeKeys = ['weighted', 'pareto'] as const
+const fuelKeys = ['petrol', 'diesel'] as const
+
+const profileOptions = computed(() =>
+  profileKeys.map((value) => [value, t(`route.options.profiles.${value}`)] as const),
+)
+const vehicleOptions = computed(() =>
+  vehicleKeys.map((value) => [value, t(`route.options.vehicles.${value}`)] as const),
+)
+const priorityOptions = computed(() =>
+  priorityKeys.map((value) => [value, t(`route.options.priority.${value}`)] as const),
+)
+const strategyOptions = computed(() =>
+  strategyKeys.map((value) => [value, t(`workbench.strategy.${value}`)] as const),
+)
+const modeOptions = computed(() =>
+  modeKeys.map((value) => [value, t(`workbench.mode.${value}`)] as const),
+)
+const fuelOptions = computed(() =>
+  fuelKeys.map((value) => [value, t(`workbench.fuel.${value}`)] as const),
+)
 const activeWeightKeys: Array<keyof RouteRequest['criteria_weights']> = [
   'distance',
   'duration',
@@ -97,14 +110,12 @@ function updateWeight(key: string, value: number) {
   draft.value.criteria_weights[key as keyof RouteRequest['criteria_weights']] = value
 }
 
-function stringValue(event: Event) {
-  return (event.target as HTMLInputElement).value
+function criterionLabel(key: string) {
+  return t(`workbench.criteria.${key}`)
 }
 
-function nullableStringValue(event: Event) {
-  const value = stringValue(event).trim()
-
-  return value ? value : null
+function stringValue(event: Event) {
+  return (event.target as HTMLInputElement).value
 }
 
 function nullableNumberValue(event: Event) {
@@ -131,22 +142,22 @@ function requiredNumberValue(event: Event, fallback: number) {
         <div class="min-w-0">
           <CardTitle class="flex items-center gap-2 text-base">
             <SlidersHorizontal data-icon="inline-start" />
-            Расширенные настройки
+            {{ t('route.advancedSettings') }}
           </CardTitle>
           <CardDescription class="mt-1 leading-5">
-            Технические параметры текущего запроса скрыты из обычного режима и доступны здесь.
+            {{ t('workbench.description') }}
           </CardDescription>
         </div>
-        <Badge variant="outline">Дополнительно</Badge>
+        <Badge variant="outline">{{ t('workbench.additional') }}</Badge>
       </div>
       <div class="flex flex-wrap gap-2">
         <Button :disabled="!canRun" @click="emit('run')">
           <Play data-icon="inline-start" />
-          {{ running ? 'Расчет...' : 'Запустить' }}
+          {{ running ? t('workbench.running') : t('workbench.run') }}
         </Button>
         <Button variant="outline" :disabled="running" @click="emit('resetDraft')">
           <RefreshCw data-icon="inline-start" />
-          Очистить
+          {{ t('route.clear') }}
         </Button>
         <Button variant="outline" :disabled="!draft" @click="openJsonSheet">
           <Code2 data-icon="inline-start" />
@@ -159,9 +170,9 @@ function requiredNumberValue(event: Event, fallback: number) {
       <Tabs default-value="base" class="gap-0">
         <div class="border-y bg-muted/40 px-4 py-2">
           <TabsList class="grid h-auto w-full grid-cols-3">
-            <TabsTrigger value="base">Запрос</TabsTrigger>
-            <TabsTrigger value="cargo">Груз и машины</TabsTrigger>
-            <TabsTrigger value="weights">Критерии</TabsTrigger>
+            <TabsTrigger value="base">{{ t('workbench.tabs.request') }}</TabsTrigger>
+            <TabsTrigger value="cargo">{{ t('workbench.tabs.cargo') }}</TabsTrigger>
+            <TabsTrigger value="weights">{{ t('workbench.tabs.criteria') }}</TabsTrigger>
           </TabsList>
         </div>
 
@@ -170,16 +181,18 @@ function requiredNumberValue(event: Event, fallback: number) {
             <section class="grid gap-3 sm:grid-cols-2">
               <div class="flex items-center justify-between gap-3 rounded-md border p-3">
                 <div class="min-w-0">
-                  <Label class="text-sm">Оптимизация порядка</Label>
-                  <p class="text-xs text-muted-foreground">Алгоритм переставляет точки маршрута</p>
+                  <Label class="text-sm">{{ t('route.optimizeOrderTitle') }}</Label>
+                  <p class="text-xs text-muted-foreground">
+                    {{ t('route.optimizeOrderDescription') }}
+                  </p>
                 </div>
                 <Switch v-model="draft.optimize" />
               </div>
               <div class="flex items-center justify-between gap-3 rounded-md border p-3">
                 <div class="min-w-0">
-                  <Label class="text-sm">Фиксировать старт и финиш</Label>
+                  <Label class="text-sm">{{ t('route.fixEndsTitle') }}</Label>
                   <p class="text-xs text-muted-foreground">
-                    Первая и последняя точки остаются на местах
+                    {{ t('route.fixEndsDescription') }}
                   </p>
                 </div>
                 <Switch v-model="draft.fix_ends" />
@@ -188,8 +201,8 @@ function requiredNumberValue(event: Event, fallback: number) {
 
             <section class="grid gap-3 sm:grid-cols-2">
               <div class="flex flex-col gap-2">
-                <Label>Профиль</Label>
-                <Select v-model="draft.profile" aria-label="Профиль маршрута">
+                <Label>{{ t('route.routeProfile') }}</Label>
+                <Select v-model="draft.profile" :aria-label="t('route.routeProfile')">
                   <SelectTrigger class="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -205,8 +218,8 @@ function requiredNumberValue(event: Event, fallback: number) {
                 </Select>
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Приоритет</Label>
-                <Select v-model="draft.priority_profile" aria-label="Приоритет">
+                <Label>{{ t('route.priority') }}</Label>
+                <Select v-model="draft.priority_profile" :aria-label="t('route.priority')">
                   <SelectTrigger class="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -222,8 +235,8 @@ function requiredNumberValue(event: Event, fallback: number) {
                 </Select>
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Режим оптимизации</Label>
-                <Select v-model="draft.optimize_mode" aria-label="Режим оптимизации">
+                <Label>{{ t('workbench.optimizeMode') }}</Label>
+                <Select v-model="draft.optimize_mode" :aria-label="t('workbench.optimizeMode')">
                   <SelectTrigger class="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -235,8 +248,11 @@ function requiredNumberValue(event: Event, fallback: number) {
                 </Select>
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Стратегия</Label>
-                <Select v-model="draft.optimization_strategy" aria-label="Стратегия">
+                <Label>{{ t('workbench.strategyLabel') }}</Label>
+                <Select
+                  v-model="draft.optimization_strategy"
+                  :aria-label="t('workbench.strategyLabel')"
+                >
                   <SelectTrigger class="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -251,21 +267,12 @@ function requiredNumberValue(event: Event, fallback: number) {
                   </SelectContent>
                 </Select>
               </div>
-              <div class="flex flex-col gap-2 sm:col-span-2">
-                <Label>Отправление</Label>
-                <Input
-                  :value="draft.departure_at ?? ''"
-                  type="text"
-                  placeholder="2026-06-10T07:30:00+00:00"
-                  @input="draft.departure_at = nullableStringValue($event)"
-                />
-              </div>
             </section>
 
             <div class="flex items-center justify-between gap-3 rounded-md border p-3">
               <div class="min-w-0">
-                <Label class="text-sm">Динамические веса</Label>
-                <p class="text-xs text-muted-foreground">Контекстная адаптация весов</p>
+                <Label class="text-sm">{{ t('workbench.dynamicWeights') }}</Label>
+                <p class="text-xs text-muted-foreground">{{ t('workbench.dynamicWeightsHint') }}</p>
               </div>
               <Switch v-model="draft.use_dynamic_weights" />
             </div>
@@ -274,8 +281,8 @@ function requiredNumberValue(event: Event, fallback: number) {
           <TabsContent value="cargo" class="m-0 flex flex-col gap-5 p-4">
             <section class="grid gap-3 sm:grid-cols-2">
               <div class="flex flex-col gap-2">
-                <Label>Транспорт</Label>
-                <Select v-model="draft.vehicle_class" aria-label="Транспорт">
+                <Label>{{ t('route.vehicleClass') }}</Label>
+                <Select v-model="draft.vehicle_class" :aria-label="t('route.vehicleClass')">
                   <SelectTrigger class="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -291,8 +298,8 @@ function requiredNumberValue(event: Event, fallback: number) {
                 </Select>
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Топливо</Label>
-                <Select v-model="draft.fuel_type" aria-label="Топливо">
+                <Label>{{ t('workbench.fuelLabel') }}</Label>
+                <Select v-model="draft.fuel_type" :aria-label="t('workbench.fuelLabel')">
                   <SelectTrigger class="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -304,7 +311,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                 </Select>
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Масса груза, т</Label>
+                <Label>{{ t('route.cargoWeight') }}</Label>
                 <Input
                   :value="draft.cargo.weight_t ?? ''"
                   type="number"
@@ -314,7 +321,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                 />
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Грузоподъемность, т</Label>
+                <Label>{{ t('route.payload') }}</Label>
                 <Input
                   :value="draft.vehicle_capacity_t ?? ''"
                   type="number"
@@ -324,7 +331,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                 />
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Расход, л/100 км</Label>
+                <Label>{{ t('route.fuelConsumption') }}</Label>
                 <Input
                   :value="draft.fuel_consumption_l_per_100km ?? ''"
                   type="number"
@@ -334,7 +341,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                 />
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Стоимость водителя, руб/ч</Label>
+                <Label>{{ t('workbench.driverCost') }}</Label>
                 <Input
                   :value="draft.operating_costs.driver_cost_per_hour ?? ''"
                   type="number"
@@ -349,7 +356,7 @@ function requiredNumberValue(event: Event, fallback: number) {
 
             <section class="grid gap-3 sm:grid-cols-2">
               <div class="flex flex-col gap-2">
-                <Label>Количество машин</Label>
+                <Label>{{ t('workbench.vehicleCount') }}</Label>
                 <Input
                   :value="draft.cvrp.vehicle_count"
                   type="number"
@@ -362,7 +369,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                 />
               </div>
               <div class="flex flex-col gap-2">
-                <Label>Стартовая точка</Label>
+                <Label>{{ t('workbench.depotIndex') }}</Label>
                 <Input
                   :value="draft.cvrp.depot_index"
                   type="number"
@@ -377,9 +384,9 @@ function requiredNumberValue(event: Event, fallback: number) {
                 class="flex items-center justify-between gap-3 rounded-md border p-3 sm:col-span-2"
               >
                 <div class="min-w-0">
-                  <Label class="text-sm">Возврат в депо</Label>
+                  <Label class="text-sm">{{ t('workbench.returnToDepot') }}</Label>
                   <p class="text-xs text-muted-foreground">
-                    Используется для разделения маршрута по машинам.
+                    {{ t('workbench.returnToDepotHint') }}
                   </p>
                 </div>
                 <Switch v-model="draft.cvrp.return_to_depot" />
@@ -392,17 +399,17 @@ function requiredNumberValue(event: Event, fallback: number) {
               <WeightSlider
                 v-for="[key, value] in weightEntries"
                 :key="key"
-                :label="criteriaLabels[key] ?? key"
+                :label="criterionLabel(key)"
                 :model-value="value"
                 @update:model-value="updateWeight(key, $event)"
               />
             </section>
 
             <details class="advanced-details">
-              <summary>Параметры генетического алгоритма</summary>
+              <summary>{{ t('workbench.gaParams') }}</summary>
               <section class="mt-3 grid gap-3 sm:grid-cols-2">
                 <div class="flex flex-col gap-2">
-                  <Label>Размер популяции</Label>
+                  <Label>{{ t('workbench.populationSize') }}</Label>
                   <Input
                     :value="draft.population_size"
                     type="number"
@@ -415,7 +422,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                   />
                 </div>
                 <div class="flex flex-col gap-2">
-                  <Label>Число поколений</Label>
+                  <Label>{{ t('workbench.generations') }}</Label>
                   <Input
                     :value="draft.generations"
                     type="number"
@@ -426,7 +433,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                   />
                 </div>
                 <div class="flex flex-col gap-2">
-                  <Label>Вероятность скрещивания</Label>
+                  <Label>{{ t('workbench.crossoverRate') }}</Label>
                   <Input
                     :value="draft.crossover_rate"
                     type="number"
@@ -439,7 +446,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                   />
                 </div>
                 <div class="flex flex-col gap-2">
-                  <Label>Вероятность мутации</Label>
+                  <Label>{{ t('workbench.mutationRate') }}</Label>
                   <Input
                     :value="draft.mutation_rate"
                     type="number"
@@ -450,7 +457,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                   />
                 </div>
                 <div class="flex flex-col gap-2">
-                  <Label>Число альтернатив</Label>
+                  <Label>{{ t('workbench.maxAlternatives') }}</Label>
                   <Input
                     :value="draft.max_alternatives"
                     type="number"
@@ -463,7 +470,7 @@ function requiredNumberValue(event: Event, fallback: number) {
                   />
                 </div>
                 <div class="flex flex-col gap-2">
-                  <Label>Зерно генератора</Label>
+                  <Label>{{ t('workbench.randomSeed') }}</Label>
                   <Input
                     :value="draft.random_seed ?? ''"
                     type="number"
@@ -479,16 +486,16 @@ function requiredNumberValue(event: Event, fallback: number) {
       </Tabs>
     </CardContent>
     <CardContent v-else class="p-4 text-sm text-muted-foreground">
-      Создайте запрос на главном экране.
+      {{ t('workbench.empty') }}
     </CardContent>
   </Card>
 
   <Sheet v-model:open="jsonOpen">
     <SheetContent class="w-[92vw] max-w-[92vw] sm:w-[48rem] sm:max-w-none">
       <SheetHeader>
-        <SheetTitle>JSON-запрос</SheetTitle>
+        <SheetTitle>{{ t('workbench.jsonTitle') }}</SheetTitle>
         <SheetDescription>
-          Точный запрос для POST /api/routes. Изменения применяются после валидации.
+          {{ t('workbench.jsonDescription') }}
         </SheetDescription>
       </SheetHeader>
       <div class="min-h-0 flex-1 px-4">
@@ -499,8 +506,8 @@ function requiredNumberValue(event: Event, fallback: number) {
         <p v-if="jsonError" class="mt-2 text-sm text-destructive">{{ jsonError }}</p>
       </div>
       <SheetFooter class="flex-row justify-end gap-2">
-        <Button variant="outline" @click="emit('syncJson')">Синхронизировать</Button>
-        <Button @click="emit('applyJson')">Применить JSON</Button>
+        <Button variant="outline" @click="emit('syncJson')">{{ t('workbench.syncJson') }}</Button>
+        <Button @click="emit('applyJson')">{{ t('workbench.applyJson') }}</Button>
       </SheetFooter>
     </SheetContent>
   </Sheet>

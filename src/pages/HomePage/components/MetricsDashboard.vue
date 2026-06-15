@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Clock3, Fuel, Route, Scale } from 'lucide-vue-next'
 
 import { Skeleton } from '@/shared/ui'
@@ -12,6 +13,7 @@ const props = defineProps<{
   result: RouteResponse | null
   loading: boolean
 }>()
+const { t } = useI18n({ useScope: 'global' })
 
 type MetricCardItem = {
   label: string
@@ -40,32 +42,34 @@ const cards = computed<MetricCardItem[]>(() => {
 
   return [
     {
-      label: 'Дистанция',
-      value: `${formatNumber(current.distance_km, 1)} км`,
+      label: t('route.resultRows.distance'),
+      value: `${formatNumber(current.distance_km, 1)} ${t('route.units.kilometer')}`,
       accent: 'blue',
       icon: Route,
     },
     {
-      label: 'Время',
+      label: t('route.resultRows.duration'),
       value: formatDuration(current.duration_min),
-      detail: averageSpeed ? `${formatNumber(averageSpeed, 1)} км/ч средняя` : undefined,
+      detail: averageSpeed
+        ? t('metrics.averageSpeed', { value: formatNumber(averageSpeed, 1) })
+        : undefined,
       accent: 'emerald',
       icon: Clock3,
     },
     {
-      label: 'Стоимость',
+      label: t('route.resultRows.cost'),
       value: formatMoney(
         props.result?.operational_cost?.total_cost ?? current.operational_cost,
         currency.value,
         true,
       ),
-      detail: 'топливо и эксплуатация',
+      detail: t('metrics.fuelAndOperation'),
       accent: 'amber',
       icon: Scale,
     },
     {
-      label: 'Топливо',
-      value: `${formatNumber(current.fuel_liters, 1)} л`,
+      label: t('route.resultRows.fuel'),
+      value: `${formatNumber(current.fuel_liters, 1)} ${t('route.units.liter')}`,
       detail: formatMoney(
         props.result?.fuel_cost?.total_cost ?? current.fuel_cost,
         currency.value,

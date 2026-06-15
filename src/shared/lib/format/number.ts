@@ -1,18 +1,21 @@
-const numberFormatter = new Intl.NumberFormat('ru-RU', {
-  maximumFractionDigits: 1,
-})
+function getLocale() {
+  if (typeof document !== 'undefined' && document.documentElement.lang === 'en') {
+    return 'en-US'
+  }
 
-const compactFormatter = new Intl.NumberFormat('ru-RU', {
-  notation: 'compact',
-  maximumFractionDigits: 1,
-})
+  return 'ru-RU'
+}
+
+function getLanguage() {
+  return getLocale() === 'en-US' ? 'en' : 'ru'
+}
 
 export function formatNumber(value: number | null | undefined, fractionDigits = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return '—'
+    return '-'
   }
 
-  return new Intl.NumberFormat('ru-RU', {
+  return new Intl.NumberFormat(getLocale(), {
     maximumFractionDigits: fractionDigits,
     minimumFractionDigits: fractionDigits,
   }).format(value)
@@ -20,23 +23,28 @@ export function formatNumber(value: number | null | undefined, fractionDigits = 
 
 export function formatCompactNumber(value: number | null | undefined) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return '—'
+    return '-'
   }
 
-  return compactFormatter.format(value)
+  return new Intl.NumberFormat(getLocale(), {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value)
 }
 
 export function formatInteger(value: number | null | undefined) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return '—'
+    return '-'
   }
 
-  return numberFormatter.format(Math.round(value))
+  return new Intl.NumberFormat(getLocale(), {
+    maximumFractionDigits: 0,
+  }).format(Math.round(value))
 }
 
 export function formatPercent(value: number | null | undefined, fractionDigits = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return '—'
+    return '-'
   }
 
   return `${formatNumber(value, fractionDigits)}%`
@@ -44,10 +52,10 @@ export function formatPercent(value: number | null | undefined, fractionDigits =
 
 export function formatMoney(value: number | null | undefined, currency = 'RUB', compact = false) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return '—'
+    return '-'
   }
 
-  return new Intl.NumberFormat('ru-RU', {
+  return new Intl.NumberFormat(getLocale(), {
     style: 'currency',
     currency,
     notation: compact ? 'compact' : 'standard',
@@ -57,11 +65,19 @@ export function formatMoney(value: number | null | undefined, currency = 'RUB', 
 
 export function formatDuration(minutes: number | null | undefined) {
   if (minutes === null || minutes === undefined || Number.isNaN(minutes)) {
-    return '—'
+    return '-'
   }
 
   const hours = Math.floor(minutes / 60)
   const rest = Math.round(minutes % 60)
+
+  if (getLanguage() === 'en') {
+    if (hours <= 0) {
+      return `${rest} min`
+    }
+
+    return `${hours} h ${rest} min`
+  }
 
   if (hours <= 0) {
     return `${rest} мин`

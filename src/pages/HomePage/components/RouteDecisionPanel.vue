@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Clock3, Fuel, Route, Scale, ShieldAlert, ShieldCheck } from 'lucide-vue-next'
 
 import { Badge, Card, CardContent, CardHeader, CardTitle } from '@/shared/ui'
@@ -10,6 +11,7 @@ import { formatImprovement, translateBackendText } from '@/shared/lib/format/rou
 const props = defineProps<{
   result: RouteResponse
 }>()
+const { t } = useI18n({ useScope: 'global' })
 
 const metrics = computed(
   () => props.result.metrics ?? props.result.comparison?.optimized_metrics ?? null,
@@ -44,7 +46,7 @@ const subtitle = computed(() => {
     )
   }
 
-  return 'Маршрут выбран, потому что он сокращает расстояние, время в пути и итоговую стоимость по сравнению с исходным порядком точек.'
+  return t('decision.defaultSubtitle')
 })
 
 function percentLowerIsBetter(
@@ -107,10 +109,10 @@ function contributionText(value: number | null, positiveWord: string, negativeWo
   }
 
   if (Math.abs(value) < 0.05) {
-    return 'без заметного изменения'
+    return t('decision.noNoticeableChange')
   }
 
-  return `${value >= 0 ? positiveWord : negativeWord} на ${formatImprovement(Math.abs(value), 1)}`
+  return `${value >= 0 ? positiveWord : negativeWord} ${t('decision.by')} ${formatImprovement(Math.abs(value), 1)}`
 }
 
 const criterionContributions = computed(() => {
@@ -131,64 +133,79 @@ const criterionContributions = computed(() => {
 
   return [
     {
-      label: 'Расстояние',
+      label: t('decision.criteria.distance.label'),
       value:
-        contributionText(comparisonImprovement.value?.distance_km ?? null, 'короче', 'длиннее') ??
-        `${formatNumber(current.distance_km, 1)} км`,
-      detail: 'влияет на пробег и ресурс транспорта',
+        contributionText(
+          comparisonImprovement.value?.distance_km ?? null,
+          t('decision.words.shorter'),
+          t('decision.words.longer'),
+        ) ?? `${formatNumber(current.distance_km, 1)} ${t('route.units.kilometer')}`,
+      detail: t('decision.criteria.distance.detail'),
       positive: (comparisonImprovement.value?.distance_km ?? 0) >= 0,
       accent: 'blue',
       icon: Route,
     },
     {
-      label: 'Время',
+      label: t('decision.criteria.duration.label'),
       value:
-        contributionText(comparisonImprovement.value?.duration_min ?? null, 'быстрее', 'дольше') ??
-        `${formatNumber(current.duration_min, 0)} мин`,
-      detail: 'учитывает скорость, трафик и задержки',
+        contributionText(
+          comparisonImprovement.value?.duration_min ?? null,
+          t('decision.words.faster'),
+          t('decision.words.slower'),
+        ) ?? t('route.units.minute', { minutes: formatNumber(current.duration_min, 0) }),
+      detail: t('decision.criteria.duration.detail'),
       positive: (comparisonImprovement.value?.duration_min ?? 0) >= 0,
       accent: 'emerald',
       icon: Clock3,
     },
     {
-      label: 'Стоимость',
+      label: t('decision.criteria.cost.label'),
       value:
         contributionText(
           comparisonImprovement.value?.operational_cost ?? null,
-          'дешевле',
-          'дороже',
+          t('decision.words.cheaper'),
+          t('decision.words.moreExpensive'),
         ) ?? formatMoney(current.operational_cost, currency.value, true),
-      detail: 'топливо, водитель, обслуживание и платные дороги',
+      detail: t('decision.criteria.cost.detail'),
       positive: (comparisonImprovement.value?.operational_cost ?? 0) >= 0,
       accent: 'amber',
       icon: Scale,
     },
     {
-      label: 'Топливо',
+      label: t('decision.criteria.fuel.label'),
       value:
-        contributionText(fuelImprovement, 'меньше расход', 'больше расход') ??
-        `${formatNumber(current.fuel_liters, 1)} л`,
-      detail: 'снижает расход и связанные выбросы',
+        contributionText(
+          fuelImprovement,
+          t('decision.words.lessFuel'),
+          t('decision.words.moreFuel'),
+        ) ?? `${formatNumber(current.fuel_liters, 1)} ${t('route.units.liter')}`,
+      detail: t('decision.criteria.fuel.detail'),
       positive: (fuelImprovement ?? 0) >= 0,
       accent: 'violet',
       icon: Fuel,
     },
     {
-      label: 'Риск',
+      label: t('decision.criteria.risk.label'),
       value:
-        contributionText(riskImprovement, 'ниже риск', 'выше риск') ??
-        `${formatNumber(totalRiskScore(current), 2)} индекс`,
-      detail: 'дороги, погода, события и грузовые ограничения',
+        contributionText(
+          riskImprovement,
+          t('decision.words.lowerRisk'),
+          t('decision.words.higherRisk'),
+        ) ?? t('decision.indexValue', { value: formatNumber(totalRiskScore(current), 2) }),
+      detail: t('decision.criteria.risk.detail'),
       positive: (riskImprovement ?? 0) >= 0 && current.feasible,
       accent: 'rose',
       icon: ShieldAlert,
     },
     {
-      label: 'Надежность',
+      label: t('decision.criteria.reliability.label'),
       value:
-        contributionText(reliabilityImprovement, 'выше', 'ниже') ??
-        `${formatPercent(reliabilityScore(current) * 100, 0)}`,
-      detail: 'вероятность стабильного прохождения маршрута',
+        contributionText(
+          reliabilityImprovement,
+          t('decision.words.higher'),
+          t('decision.words.lower'),
+        ) ?? `${formatPercent(reliabilityScore(current) * 100, 0)}`,
+      detail: t('decision.criteria.reliability.detail'),
       positive: (reliabilityImprovement ?? 0) >= 0,
       accent: 'sky',
       icon: ShieldCheck,
@@ -201,19 +218,23 @@ const criterionContributions = computed(() => {
   <Card class="decision-card">
     <CardHeader class="decision-header">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <CardTitle class="text-base">Почему выбран этот маршрут</CardTitle>
+        <CardTitle class="text-base">{{ t('decision.title') }}</CardTitle>
         <div class="flex flex-wrap gap-2">
           <Badge
             v-if="diagnostics?.baseline_guard_applied || decisionSummary?.baseline_guard_applied"
             variant="outline"
           >
-            Исходный порядок выбран
+            {{ t('decision.baselineSelected') }}
           </Badge>
           <Badge v-if="decisionExplanation?.compromise_accepted" variant="outline">
-            Компромисс принят
+            {{ t('decision.compromiseAccepted') }}
           </Badge>
-          <Badge v-if="hasConstraints" variant="destructive">Есть ограничения</Badge>
-          <Badge v-if="metrics && !metrics.feasible" variant="destructive">Недопустимо</Badge>
+          <Badge v-if="hasConstraints" variant="destructive">
+            {{ t('decision.hasConstraints') }}
+          </Badge>
+          <Badge v-if="metrics && !metrics.feasible" variant="destructive">
+            {{ t('decision.infeasible') }}
+          </Badge>
         </div>
       </div>
     </CardHeader>
@@ -226,12 +247,13 @@ const criterionContributions = computed(() => {
         v-if="diagnostics?.baseline_guard_applied || decisionSummary?.baseline_guard_applied"
         class="mb-2 rounded-lg border bg-muted/40 p-3 text-sm leading-6 text-muted-foreground"
       >
-        Оптимизатор не нашел вариант лучше исходного порядка точек. Для сохранения качества выбран
-        исходный маршрут.
+        {{ t('decision.baselineGuardNotice') }}
       </div>
 
       <div>
-        <p class="mb-2 text-xs font-medium uppercase text-muted-foreground">Вклад критериев</p>
+        <p class="mb-2 text-xs font-medium uppercase text-muted-foreground">
+          {{ t('decision.criteriaTitle') }}
+        </p>
         <div class="criterion-grid">
           <div
             v-for="criterion in criterionContributions"

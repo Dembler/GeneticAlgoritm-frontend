@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -18,6 +19,7 @@ const props = defineProps<{
   result: RouteResponse | null
   selectedAlternativeRank: number | null
 }>()
+const { t } = useI18n({ useScope: 'global' })
 
 const RISK_HIGHLIGHT_THRESHOLD = 0.55
 const RISK_HIGHLIGHT_LIMIT = 4
@@ -59,7 +61,7 @@ const routeLayers = computed<RouteLayer[]>(() => {
       id: 'baseline',
       kind: 'baseline',
       geometry: props.result.comparison.baseline_geometry,
-      label: 'Исходный маршрут',
+      label: t('analysis.baselineRoute'),
     })
   }
 
@@ -68,7 +70,7 @@ const routeLayers = computed<RouteLayer[]>(() => {
       id: 'optimized',
       kind: 'optimized',
       geometry: props.result.geometry,
-      label: 'Выбранный маршрут',
+      label: t('analysis.selectedRoute'),
     })
   }
 
@@ -77,7 +79,7 @@ const routeLayers = computed<RouteLayer[]>(() => {
       id: `alternative-${selectedAlternative.value.rank}`,
       kind: 'alternative',
       geometry: selectedAlternative.value.geometry,
-      label: `Альтернатива ${selectedAlternative.value.rank}`,
+      label: t('analysis.alternative', { rank: selectedAlternative.value.rank }),
     })
   }
 
@@ -88,7 +90,7 @@ const routeLayers = computed<RouteLayer[]>(() => {
           id: `vehicle-${vehicleRoute.vehicle_index}`,
           kind: 'cvrp',
           geometry: vehicleRoute.geometry,
-          label: `Машина ${vehicleRoute.vehicle_index + 1}`,
+          label: t('map.vehicle', { number: vehicleRoute.vehicle_index + 1 }),
         })
       }
     })
@@ -99,7 +101,7 @@ const routeLayers = computed<RouteLayer[]>(() => {
       id: 'draft',
       kind: 'draft',
       geometry: draft.value.points.map((point) => [point.lat, point.lon]),
-      label: 'Черновик маршрута',
+      label: t('map.draftRoute'),
     })
   }
 
@@ -137,10 +139,10 @@ const routeLegend = computed(() => {
     hasBaseline: Boolean(comparison?.baseline_geometry?.length),
     hasOptimized: Boolean(props.result?.geometry?.length),
     baseline: baselineMetrics
-      ? `${formatNumber(baselineMetrics.distance_km, 0)} км / ${formatDuration(baselineMetrics.duration_min)}`
+      ? `${formatNumber(baselineMetrics.distance_km, 0)} ${t('route.units.kilometer')} / ${formatDuration(baselineMetrics.duration_min)}`
       : null,
     optimized: optimizedMetrics
-      ? `${formatNumber(optimizedMetrics.distance_km, 0)} км / ${formatDuration(optimizedMetrics.duration_min)}`
+      ? `${formatNumber(optimizedMetrics.distance_km, 0)} ${t('route.units.kilometer')} / ${formatDuration(optimizedMetrics.duration_min)}`
       : null,
   }
 })
@@ -156,14 +158,14 @@ const riskInsights = computed(() =>
 
 const markerLegendText = computed(() => {
   if (selectedAlternative.value) {
-    return 'Номера точек показывают порядок выбранной альтернативы.'
+    return t('map.markerLegendAlternative')
   }
 
   if (props.result?.geometry?.length) {
-    return 'Номера точек показывают порядок выбранного маршрута.'
+    return t('map.markerLegendSelected')
   }
 
-  return 'Номера точек показывают порядок ввода.'
+  return t('map.markerLegendDraft')
 })
 
 function distanceSquared(point: Point, coordinate: number[]) {
@@ -286,7 +288,7 @@ const markerPoints = computed<MarkerPoint[]>(() => {
 function createMarkerIcon(markerPoint: MarkerPoint, isResultPoint: boolean) {
   const sourceBadge =
     markerPoint.sourceOrder && markerPoint.sourceOrder !== markerPoint.routeOrder
-      ? `<small>исх. ${markerPoint.sourceOrder}</small>`
+      ? `<small>${t('map.sourceShort')} ${markerPoint.sourceOrder}</small>`
       : ''
 
   return L.divIcon({
@@ -347,7 +349,7 @@ function addPointAt(latlng: L.LatLng) {
   const insertIndex =
     draft.value.points.length > 1 ? draft.value.points.length - 1 : draft.value.points.length
   draft.value.points.splice(insertIndex, 0, {
-    label: `Точка ${insertIndex + 1}`,
+    label: t('analysis.point', { number: insertIndex + 1 }),
     lat: Number(latlng.lat.toFixed(6)),
     lon: Number(latlng.lng.toFixed(6)),
   })
@@ -381,12 +383,12 @@ function renderMarkers() {
     })
 
     const tooltipParts = [
-      `Маршрут #${markerPoint.routeOrder}`,
-      markerPoint.sourceOrder ? `исходная #${markerPoint.sourceOrder}` : null,
+      t('map.routeOrder', { number: markerPoint.routeOrder }),
+      markerPoint.sourceOrder ? t('map.sourceOrder', { number: markerPoint.sourceOrder }) : null,
       markerPoint.point.label,
     ].filter(Boolean)
 
-    marker.bindTooltip(tooltipParts.join(' · ') || `Точка ${index + 1}`, {
+    marker.bindTooltip(tooltipParts.join(' · ') || t('analysis.point', { number: index + 1 }), {
       direction: 'top',
       offset: [0, -12],
       opacity: 0.96,
@@ -614,20 +616,20 @@ watch(
     <div v-if="routeLegend.hasOptimized || routeLegend.hasBaseline" class="route-legend">
       <div v-if="routeLegend.hasOptimized" class="route-legend__row">
         <span class="route-legend__line route-legend__line--optimized" />
-        <span class="route-legend__label">Выбранный маршрут</span>
+        <span class="route-legend__label">{{ t('analysis.selectedRoute') }}</span>
         <span v-if="routeLegend.optimized" class="route-legend__value">{{
           routeLegend.optimized
         }}</span>
       </div>
       <div v-if="routeLegend.hasBaseline" class="route-legend__row">
         <span class="route-legend__line route-legend__line--baseline" />
-        <span class="route-legend__label">Исходный маршрут</span>
+        <span class="route-legend__label">{{ t('analysis.baselineRoute') }}</span>
         <span v-if="routeLegend.baseline" class="route-legend__value">{{
           routeLegend.baseline
         }}</span>
       </div>
       <div v-if="riskInsights.length" class="route-legend__risk">
-        <div class="route-legend__risk-title">Проблемные участки</div>
+        <div class="route-legend__risk-title">{{ t('map.problemSegments') }}</div>
         <div
           v-for="insight in riskInsights"
           :key="insight.narrative"
@@ -647,7 +649,7 @@ watch(
       </div>
     </div>
     <div v-if="!hasResultRoute" class="map-help">
-      Клик по карте добавляет точку. Маркеры можно перетаскивать до запуска расчета.
+      {{ t('map.help') }}
     </div>
   </div>
 </template>

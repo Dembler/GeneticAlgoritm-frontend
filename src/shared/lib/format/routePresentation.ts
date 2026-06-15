@@ -1,6 +1,10 @@
 import { formatPercent } from './number'
 
-const providerLabels: Record<string, string> = {
+function isEnglish() {
+  return typeof document !== 'undefined' && document.documentElement.lang === 'en'
+}
+
+const providerLabelsRu: Record<string, string> = {
   'tomtom-routing': 'TomTom',
   'tomtom routing': 'TomTom',
   tomtom: 'TomTom',
@@ -12,7 +16,19 @@ const providerLabels: Record<string, string> = {
   unknown: 'неизвестно',
 }
 
-const statusLabels: Record<string, string> = {
+const providerLabelsEn: Record<string, string> = {
+  'tomtom-routing': 'TomTom',
+  'tomtom routing': 'TomTom',
+  tomtom: 'TomTom',
+  osrm: 'OSRM',
+  'public osrm': 'OSRM',
+  fallback: 'Fallback model',
+  'osrm+fallback': 'OSRM + fallback model',
+  backend: 'Backend',
+  unknown: 'unknown',
+}
+
+const statusLabelsRu: Record<string, string> = {
   ok: 'Выполнено',
   active: 'Активно',
   disabled: 'Отключено',
@@ -28,7 +44,23 @@ const statusLabels: Record<string, string> = {
   unknown: 'неизвестно',
 }
 
-const integrationLabels: Record<string, string> = {
+const statusLabelsEn: Record<string, string> = {
+  ok: 'OK',
+  active: 'Active',
+  disabled: 'Disabled',
+  ready: 'Ready',
+  gain: 'Gain',
+  factor: 'Factor',
+  balanced: 'Balanced mode',
+  weighted: 'Weighted score',
+  pareto: 'Pareto approach',
+  strict: 'Strict mode',
+  'fallback-ready': 'Fallback ready',
+  degraded: 'Degraded',
+  unknown: 'unknown',
+}
+
+const integrationLabelsRu: Record<string, string> = {
   'OSRM Routing': 'Маршрутизация OSRM',
   Weather: 'Погода',
   Elevation: 'Рельеф',
@@ -40,7 +72,19 @@ const integrationLabels: Record<string, string> = {
   'Fuel prices': 'Цены на топливо',
 }
 
-const sourceLabels: Record<string, string> = {
+const integrationLabelsEn: Record<string, string> = {
+  'OSRM Routing': 'OSRM routing',
+  Weather: 'Weather',
+  Elevation: 'Elevation',
+  Traffic: 'Traffic',
+  'Road quality': 'Road quality',
+  'Road events': 'Road events',
+  'Infrastructure restrictions': 'Vehicle restrictions',
+  Tolls: 'Tolls',
+  'Fuel prices': 'Fuel prices',
+}
+
+const sourceLabelsRu: Record<string, string> = {
   'tomtom-routing': 'TomTom',
   'tomtom routing': 'TomTom',
   'tomtom-matrix': 'TomTom Matrix',
@@ -67,7 +111,18 @@ const sourceLabels: Record<string, string> = {
   backend: 'Backend',
 }
 
-const textReplacements: Array<[RegExp, string]> = [
+const sourceLabelsEn: Record<string, string> = {
+  ...sourceLabelsRu,
+  fallback: 'Fallback model',
+  'synthetic fallback': 'Fallback model',
+  'cached demo provider': 'Demo provider',
+  'not configured': 'not configured',
+  'Haversine matrix': 'Fallback model',
+  'seasonal profile': 'seasonal profile',
+  'synthetic congestion index': 'synthetic congestion index',
+}
+
+const textReplacementsRu: Array<[RegExp, string]> = [
   [
     /The route balances time, cost and risk better than the baseline\./gi,
     'Маршрут выбран, потому что он сокращает расстояние, время в пути и итоговую стоимость по сравнению с исходным порядком точек.',
@@ -100,7 +155,7 @@ const textReplacements: Array<[RegExp, string]> = [
   [/\bstrict\b/gi, 'строгий режим'],
 ]
 
-const triggerLabels: Record<string, string> = {
+const triggerLabelsRu: Record<string, string> = {
   'priority: balanced': 'приоритет: сбалансированный режим',
   'priority: fastest': 'приоритет: скорость',
   'priority: cheapest': 'приоритет: стоимость',
@@ -118,7 +173,7 @@ export function normalizePercentText(value: string) {
 
 export function formatMissing(value: string | number | null | undefined) {
   if (value === null || value === undefined || value === '') {
-    return 'нет данных'
+    return isEnglish() ? 'no data' : 'нет данных'
   }
 
   return String(value)
@@ -128,30 +183,36 @@ export function formatProvider(value: string | null | undefined) {
   const normalized = value?.trim()
 
   if (!normalized) {
-    return 'неизвестно'
+    return isEnglish() ? 'unknown' : 'неизвестно'
   }
 
-  return providerLabels[normalized] ?? providerLabels[normalized.toLowerCase()] ?? normalized
+  const labels = isEnglish() ? providerLabelsEn : providerLabelsRu
+
+  return labels[normalized] ?? labels[normalized.toLowerCase()] ?? normalized
 }
 
 export function formatTechnicalStatus(value: string | null | undefined) {
   const normalized = value?.trim()
 
   if (!normalized) {
-    return 'неизвестно'
+    return isEnglish() ? 'unknown' : 'неизвестно'
   }
 
-  return statusLabels[normalized] ?? statusLabels[normalized.toLowerCase()] ?? normalized
+  const labels = isEnglish() ? statusLabelsEn : statusLabelsRu
+
+  return labels[normalized] ?? labels[normalized.toLowerCase()] ?? normalized
 }
 
 export function formatDataSource(value: string | null | undefined) {
   const normalized = value?.trim()
 
   if (!normalized) {
-    return 'нет данных'
+    return isEnglish() ? 'no data' : 'нет данных'
   }
 
-  return sourceLabels[normalized] ?? sourceLabels[normalized.toLowerCase()] ?? normalized
+  const labels = isEnglish() ? sourceLabelsEn : sourceLabelsRu
+
+  return labels[normalized] ?? labels[normalized.toLowerCase()] ?? normalized
 }
 
 export function hasFallbackSource(value: string | null | undefined) {
@@ -164,10 +225,12 @@ export function formatIntegrationName(value: string | null | undefined) {
   const normalized = value?.trim()
 
   if (!normalized) {
-    return 'интеграция'
+    return isEnglish() ? 'integration' : 'интеграция'
   }
 
-  return integrationLabels[normalized] ?? normalized
+  const labels = isEnglish() ? integrationLabelsEn : integrationLabelsRu
+
+  return labels[normalized] ?? normalized
 }
 
 export function translateBackendText(value: string | null | undefined) {
@@ -175,8 +238,12 @@ export function translateBackendText(value: string | null | undefined) {
     return ''
   }
 
+  if (isEnglish()) {
+    return value
+  }
+
   return normalizePercentText(
-    textReplacements.reduce(
+    textReplacementsRu.reduce(
       (text, [pattern, replacement]) => text.replace(pattern, replacement),
       value,
     ),
@@ -184,16 +251,16 @@ export function translateBackendText(value: string | null | undefined) {
 }
 
 export function translateTrigger(value: string) {
-  return triggerLabels[value] ?? value
+  return isEnglish() ? value : (triggerLabelsRu[value] ?? value)
 }
 
 export function formatImprovement(value: number | null | undefined, fractionDigits = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return 'нет данных'
+    return isEnglish() ? 'no data' : 'нет данных'
   }
 
   if (Math.abs(value) < 0.05) {
-    return 'без улучшения'
+    return isEnglish() ? 'no improvement' : 'без улучшения'
   }
 
   return formatPercent(value, fractionDigits)

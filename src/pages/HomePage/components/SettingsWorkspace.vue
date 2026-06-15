@@ -103,13 +103,9 @@ watch(
 
           <div class="grid gap-2 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
             <Label class="pt-1">{{ t('settings.themeLabel') }}</Label>
-            <div
-              class="flex w-full max-w-[28rem] items-center justify-between gap-4 rounded-lg border bg-card p-4"
-            >
-              <div class="flex min-w-0 flex-1 items-start gap-3">
-                <div
-                  class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-secondary-foreground"
-                >
+            <div class="theme-card">
+              <div class="theme-card-copy">
+                <div class="theme-card-icon">
                   <Moon class="size-4" />
                 </div>
                 <p class="text-xs leading-5 text-muted-foreground">
@@ -138,11 +134,48 @@ watch(
 </template>
 
 <style scoped>
-.theme-toggle-control {
-  display: inline-flex;
+.theme-card {
+  display: grid;
+  width: 100%;
+  max-width: 28rem;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card);
+  padding: 1rem;
+}
+
+.theme-card-copy {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.theme-card-icon {
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
   flex-shrink: 0;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.theme-toggle-control {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--background);
+  padding: 0.5rem 0.625rem 0.5rem 0.75rem;
 }
 
 .theme-toggle-label {
@@ -153,8 +186,9 @@ watch(
 }
 
 .theme-switch {
-  width: 3rem;
-  height: 1.75rem;
+  width: 3.25rem;
+  height: 1.875rem;
+  flex-shrink: 0;
   border: 1px solid var(--border);
   background: var(--muted);
   box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--foreground) 5%, transparent);
@@ -172,17 +206,24 @@ watch(
   align-items: center;
   justify-content: center;
   color: var(--foreground);
+  transform: translateX(0.125rem);
   box-shadow: 0 1px 4px hsl(0 0% 0% / 0.18);
 }
 
 .theme-switch[data-state='checked'] :deep([data-slot='switch-thumb']) {
   color: var(--primary);
+  transform: translateX(1.5rem);
 }
 
-@media (max-width: 420px) {
+@media (min-width: 520px) {
+  .theme-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
   .theme-toggle-control {
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    min-width: 8.75rem;
   }
 }
 </style>

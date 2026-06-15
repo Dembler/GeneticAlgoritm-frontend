@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Activity, Calculator, Database, Grid3X3, Route, Scale } from 'lucide-vue-next'
 
 import {
@@ -47,6 +48,8 @@ const selectedAlternativeRank = defineModel<number | null>('selectedAlternativeR
   required: true,
 })
 
+const { locale, t } = useI18n({ useScope: 'global' })
+
 type MatrixValue = number | boolean | null
 type MatrixSection = {
   key: string
@@ -57,20 +60,20 @@ type MatrixSection = {
 
 const researcherMode = ref(false)
 
-const criteriaLabels: Record<keyof CriteriaWeights, string> = {
-  distance: 'Расстояние',
-  duration: 'Время движения',
-  fuel_cost: 'Стоимость топлива',
-  emissions: 'Выбросы CO2',
-  congestion: 'Трафик',
-  weather_risk: 'Погодный фактор',
-  reliability: 'Надежность',
-  safety: 'Безопасность',
-  tolls: 'Платные дороги',
-  road_quality: 'Качество дороги',
-  dynamic_events: 'Дорожные события',
-  operational_cost: 'Полная стоимость',
-  cargo_risk: 'Грузовой фактор',
+const criteriaLabelKeys: Record<keyof CriteriaWeights, string> = {
+  distance: 'analysis.criteria.distance',
+  duration: 'analysis.criteria.duration',
+  fuel_cost: 'analysis.criteria.fuelCost',
+  emissions: 'analysis.criteria.emissions',
+  congestion: 'analysis.criteria.congestion',
+  weather_risk: 'analysis.criteria.weatherRisk',
+  reliability: 'analysis.criteria.reliability',
+  safety: 'analysis.criteria.safety',
+  tolls: 'analysis.criteria.tolls',
+  road_quality: 'analysis.criteria.roadQuality',
+  dynamic_events: 'analysis.criteria.dynamicEvents',
+  operational_cost: 'analysis.criteria.operationalCost',
+  cargo_risk: 'analysis.criteria.cargoRisk',
 }
 
 const currency = computed(
@@ -102,31 +105,31 @@ const comparisonRows = computed(() => {
 
   return [
     {
-      label: 'Расстояние',
-      baseline: `${formatNumber(comparison.baseline_metrics.distance_km, 1)} км`,
-      optimized: `${formatNumber(comparison.optimized_metrics.distance_km, 1)} км`,
-      delta: `${formatNumber(comparison.delta.distance_km, 1)} км`,
+      label: t('analysis.criteria.distance'),
+      baseline: `${formatNumber(comparison.baseline_metrics.distance_km, 1)} ${t('route.units.kilometer')}`,
+      optimized: `${formatNumber(comparison.optimized_metrics.distance_km, 1)} ${t('route.units.kilometer')}`,
+      delta: `${formatNumber(comparison.delta.distance_km, 1)} ${t('route.units.kilometer')}`,
       improvement: formatImprovement(comparison.improvement_pct.distance_km, 1),
     },
     {
-      label: 'Время',
+      label: t('analysis.criteria.duration'),
       baseline: formatDuration(comparison.baseline_metrics.duration_min),
       optimized: formatDuration(comparison.optimized_metrics.duration_min),
       delta: formatDuration(Math.abs(comparison.delta.duration_min)),
       improvement: formatImprovement(comparison.improvement_pct.duration_min, 1),
     },
     {
-      label: 'Полная стоимость',
+      label: t('analysis.criteria.operationalCost'),
       baseline: formatMoney(comparison.baseline_metrics.operational_cost, currency.value, true),
       optimized: formatMoney(comparison.optimized_metrics.operational_cost, currency.value, true),
       delta: formatMoney(comparison.delta.operational_cost, currency.value, true),
       improvement: formatImprovement(comparison.improvement_pct.operational_cost, 1),
     },
     {
-      label: 'Выбросы CO2',
-      baseline: `${formatNumber(comparison.baseline_metrics.co2_kg, 1)} кг`,
-      optimized: `${formatNumber(comparison.optimized_metrics.co2_kg, 1)} кг`,
-      delta: `${formatNumber(comparison.delta.co2_kg, 1)} кг`,
+      label: t('analysis.criteria.emissions'),
+      baseline: `${formatNumber(comparison.baseline_metrics.co2_kg, 1)} kg`,
+      optimized: `${formatNumber(comparison.optimized_metrics.co2_kg, 1)} kg`,
+      delta: `${formatNumber(comparison.delta.co2_kg, 1)} kg`,
       improvement: formatImprovement(comparison.improvement_pct.co2_kg, 1),
     },
   ]
@@ -142,32 +145,36 @@ const summaryCards = computed(() => {
 
   return [
     {
-      label: 'Экономия расстояния',
+      label: t('analysis.summary.distanceSaving'),
       value: formatImprovement(comparison.improvement_pct.distance_km, 1),
-      detail: `${formatNumber(Math.abs(comparison.delta.distance_km), 1)} км`,
+      detail: `${formatNumber(Math.abs(comparison.delta.distance_km), 1)} ${t('route.units.kilometer')}`,
       icon: Route,
       accent: 'blue',
     },
     {
-      label: 'Экономия времени',
+      label: t('analysis.summary.timeSaving'),
       value: formatImprovement(comparison.improvement_pct.duration_min, 1),
       detail: formatDuration(Math.abs(comparison.delta.duration_min)),
       icon: Activity,
       accent: 'emerald',
     },
     {
-      label: 'Итоговая стоимость',
+      label: t('analysis.summary.totalCost'),
       value: formatMoney(current.operational_cost, currency.value, true),
-      detail: `${formatImprovement(comparison.improvement_pct.operational_cost, 1)} к исходному`,
+      detail: t('analysis.comparedToBaseline', {
+        value: formatImprovement(comparison.improvement_pct.operational_cost, 1),
+      }),
       icon: Scale,
       accent: 'amber',
     },
     {
-      label: 'Источник данных',
+      label: t('analysis.summary.dataSource'),
       value: formatDataSource(props.result?.data_sources?.routing ?? props.result?.provider),
       detail: props.result?.data_confidence
-        ? `достоверность ${formatPercent(props.result.data_confidence.score, 1)}`
-        : 'нет оценки достоверности',
+        ? t('analysis.dataConfidence', {
+            value: formatPercent(props.result.data_confidence.score, 1),
+          })
+        : t('analysis.noConfidence'),
       icon: Database,
       accent: 'violet',
     },
@@ -183,10 +190,10 @@ const weightRows = computed(() => {
     return []
   }
 
-  return (Object.keys(criteriaLabels) as Array<keyof CriteriaWeights>)
+  return (Object.keys(criteriaLabelKeys) as Array<keyof CriteriaWeights>)
     .map((key) => ({
       key,
-      label: criteriaLabels[key],
+      label: t(criteriaLabelKeys[key]),
       base: base[key],
       adjusted: adjusted[key],
       delta: adjusted[key] - base[key],
@@ -208,38 +215,38 @@ const matrixSections = computed<MatrixSection[]>(() => {
   return [
     matrixSection(
       'distance_km',
-      'Матрица расстояний, км',
-      'Базовые расстояния между всеми точками.',
+      t('analysis.matrices.distance.title'),
+      t('analysis.matrices.distance.description'),
       matrices.distance_km,
     ),
     matrixSection(
       'duration_min',
-      'Матрица времени, мин',
-      'Базовое время движения до учета дорожных факторов.',
+      t('analysis.matrices.duration.title'),
+      t('analysis.matrices.duration.description'),
       matrices.duration_min,
     ),
     matrixSection(
       'traffic_index',
-      'Матрица трафика',
-      'Индекс загруженности ребра от 0 до 1.',
+      t('analysis.matrices.traffic.title'),
+      t('analysis.matrices.traffic.description'),
       matrices.traffic_index,
     ),
     matrixSection(
       'road_quality',
-      'Матрица качества дороги',
-      'Качество покрытия: 1 лучше, 0 хуже.',
+      t('analysis.matrices.roadQuality.title'),
+      t('analysis.matrices.roadQuality.description'),
       matrices.road_quality,
     ),
     matrixSection(
       'incident_risk',
-      'Матрица дорожных событий',
-      'Оценка происшествий на ребрах графа.',
+      t('analysis.matrices.incidentRisk.title'),
+      t('analysis.matrices.incidentRisk.description'),
       matrices.incident_risk,
     ),
     matrixSection(
       'infrastructure_access',
-      'Матрица ограничений транспорта',
-      'Можно ли проехать с заданными параметрами транспорта.',
+      t('analysis.matrices.infrastructure.title'),
+      t('analysis.matrices.infrastructure.description'),
       matrices.infrastructure_access,
     ),
   ].filter((section) => hasMatrix(section.matrix))
@@ -268,11 +275,11 @@ function hasMatrix(matrix: MatrixValue[][]) {
 
 function formatMatrixCell(value: MatrixValue | undefined) {
   if (value === null || typeof value === 'undefined') {
-    return '—'
+    return t('analysis.dash')
   }
 
   if (typeof value === 'boolean') {
-    return value ? 'Да' : 'Нет'
+    return value ? t('analysis.yes') : t('analysis.no')
   }
 
   return formatNumber(value, Math.abs(value) >= 100 ? 0 : 2)
@@ -280,10 +287,16 @@ function formatMatrixCell(value: MatrixValue | undefined) {
 
 function formatPointOrder(points: Array<{ label?: string | null }>) {
   if (!points.length) {
-    return '—'
+    return t('analysis.dash')
   }
 
-  return points.map((point, index) => point.label || `Точка ${index + 1}`).join(' -> ')
+  return points
+    .map((point, index) => point.label || t('analysis.point', { number: index + 1 }))
+    .join(' -> ')
+}
+
+function formatDynamicTrigger(trigger: string) {
+  return locale.value === 'ru' ? translateTrigger(trigger) : trigger
 }
 </script>
 
@@ -291,16 +304,17 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
   <div v-if="result" class="analysis-workspace grid min-w-0 gap-5">
     <header class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
       <div class="grid gap-2">
-        <Badge variant="outline" class="w-fit">Текущий запуск</Badge>
-        <h1 class="text-2xl font-semibold tracking-normal text-foreground">Анализ маршрута</h1>
+        <Badge variant="outline" class="w-fit">{{ t('analysis.badge') }}</Badge>
+        <h1 class="text-2xl font-semibold tracking-normal text-foreground">
+          {{ t('analysis.title') }}
+        </h1>
         <p class="max-w-[64rem] text-sm leading-6 text-muted-foreground">
-          В обычном режиме показаны результат оптимизации, активные критерии и понятное описание
-          оценки. Технические детали доступны в режиме исследователя.
+          {{ t('analysis.description') }}
         </p>
       </div>
       <label class="flex items-center gap-3 rounded-lg border bg-card px-3 py-2 text-sm">
-        <Switch v-model="researcherMode" aria-label="Режим исследователя" />
-        <span>Режим исследователя</span>
+        <Switch v-model="researcherMode" :aria-label="t('analysis.researcherMode')" />
+        <span>{{ t('analysis.researcherMode') }}</span>
       </label>
     </header>
 
@@ -328,16 +342,20 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
 
     <Card class="analysis-section-card">
       <CardHeader>
-        <CardTitle class="text-base">Результат оптимизации</CardTitle>
+        <CardTitle class="text-base">{{ t('analysis.optimizationResult') }}</CardTitle>
       </CardHeader>
       <CardContent class="grid gap-4">
         <div class="grid gap-3 lg:grid-cols-2">
           <div class="analysis-route-card analysis-route-card--baseline">
-            <p class="text-xs font-medium uppercase text-muted-foreground">Исходный маршрут</p>
+            <p class="text-xs font-medium uppercase text-muted-foreground">
+              {{ t('analysis.baselineRoute') }}
+            </p>
             <p class="mt-2 text-sm leading-6 text-foreground">{{ routeOrder.baseline }}</p>
           </div>
           <div class="analysis-route-card analysis-route-card--optimized">
-            <p class="text-xs font-medium uppercase text-muted-foreground">Выбранный маршрут</p>
+            <p class="text-xs font-medium uppercase text-muted-foreground">
+              {{ t('analysis.selectedRoute') }}
+            </p>
             <p class="mt-2 text-sm leading-6 text-foreground">{{ routeOrder.optimized }}</p>
           </div>
         </div>
@@ -346,11 +364,11 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
           <Table class="analysis-comparison-table">
             <TableHeader>
               <TableRow>
-                <TableHead>Показатель</TableHead>
-                <TableHead>Исходный</TableHead>
-                <TableHead>Выбранный</TableHead>
-                <TableHead>Разница</TableHead>
-                <TableHead>Улучшение</TableHead>
+                <TableHead>{{ t('analysis.rows.metric') }}</TableHead>
+                <TableHead>{{ t('analysis.rows.baseline') }}</TableHead>
+                <TableHead>{{ t('analysis.rows.optimized') }}</TableHead>
+                <TableHead>{{ t('analysis.rows.delta') }}</TableHead>
+                <TableHead>{{ t('analysis.rows.improvement') }}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -359,19 +377,31 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                 :key="row.label"
                 class="analysis-comparison-row"
               >
-                <TableCell class="analysis-comparison-cell font-medium" data-label="Показатель">
+                <TableCell
+                  class="analysis-comparison-cell font-medium"
+                  :data-label="t('analysis.rows.metric')"
+                >
                   {{ row.label }}
                 </TableCell>
-                <TableCell class="analysis-comparison-cell" data-label="Исходный">
+                <TableCell
+                  class="analysis-comparison-cell"
+                  :data-label="t('analysis.rows.baseline')"
+                >
                   {{ row.baseline }}
                 </TableCell>
-                <TableCell class="analysis-comparison-cell" data-label="Выбранный">
+                <TableCell
+                  class="analysis-comparison-cell"
+                  :data-label="t('analysis.rows.optimized')"
+                >
                   {{ row.optimized }}
                 </TableCell>
-                <TableCell class="analysis-comparison-cell" data-label="Разница">
+                <TableCell class="analysis-comparison-cell" :data-label="t('analysis.rows.delta')">
                   {{ row.delta }}
                 </TableCell>
-                <TableCell class="analysis-comparison-cell" data-label="Улучшение">
+                <TableCell
+                  class="analysis-comparison-cell"
+                  :data-label="t('analysis.rows.improvement')"
+                >
                   <span class="analysis-improvement">{{ row.improvement }}</span>
                 </TableCell>
               </TableRow>
@@ -385,7 +415,7 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
       <CardHeader>
         <CardTitle class="flex items-center gap-2 text-base">
           <Calculator class="size-4 text-primary" />
-          Как получен результат
+          {{ t('analysis.howResultWasBuilt') }}
         </CardTitle>
       </CardHeader>
       <CardContent class="p-0">
@@ -394,15 +424,15 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
             <TabsList class="flex h-auto flex-wrap justify-start">
               <TabsTrigger value="criteria">
                 <Scale data-icon="inline-start" />
-                Критерии и веса
+                {{ t('analysis.tabs.criteria') }}
               </TabsTrigger>
               <TabsTrigger value="score">
                 <Calculator data-icon="inline-start" />
-                Целевая функция
+                {{ t('analysis.tabs.score') }}
               </TabsTrigger>
               <TabsTrigger v-if="researcherMode" value="matrices">
                 <Grid3X3 data-icon="inline-start" />
-                Матрицы
+                {{ t('analysis.tabs.matrices') }}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -411,16 +441,15 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
             <div
               class="rounded-lg border bg-background/70 p-3 text-sm leading-6 text-muted-foreground"
             >
-              В обычном режиме показаны только активные критерии. Нулевые критерии скрыты, чтобы не
-              выглядеть как ошибка.
+              {{ t('analysis.activeCriteriaNote') }}
             </div>
 
             <div class="flex flex-wrap gap-2">
               <Badge v-for="trigger in dynamicTriggers" :key="trigger" variant="secondary">
-                {{ translateTrigger(trigger) }}
+                {{ formatDynamicTrigger(trigger) }}
               </Badge>
               <span v-if="!dynamicTriggers.length" class="text-sm text-muted-foreground">
-                Динамические триггеры не применялись.
+                {{ t('analysis.noDynamicTriggers') }}
               </span>
             </div>
 
@@ -428,27 +457,36 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
               <Table class="analysis-weight-table">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Критерий</TableHead>
-                    <TableHead>Базовый вес</TableHead>
-                    <TableHead>Итоговый вес</TableHead>
-                    <TableHead>Изменение</TableHead>
-                    <TableHead v-if="researcherMode">Комментарий</TableHead>
+                    <TableHead>{{ t('analysis.rows.criterion') }}</TableHead>
+                    <TableHead>{{ t('analysis.rows.baseWeight') }}</TableHead>
+                    <TableHead>{{ t('analysis.rows.finalWeight') }}</TableHead>
+                    <TableHead>{{ t('analysis.rows.change') }}</TableHead>
+                    <TableHead v-if="researcherMode">{{ t('analysis.rows.comment') }}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   <TableRow v-for="row in weightRows" :key="row.key" class="analysis-weight-row">
-                    <TableCell class="analysis-weight-cell font-medium" data-label="Критерий">
+                    <TableCell
+                      class="analysis-weight-cell font-medium"
+                      :data-label="t('analysis.rows.criterion')"
+                    >
                       {{ row.label }}
                     </TableCell>
-                    <TableCell class="analysis-weight-cell" data-label="Базовый вес">
+                    <TableCell
+                      class="analysis-weight-cell"
+                      :data-label="t('analysis.rows.baseWeight')"
+                    >
                       {{ formatNumber(row.base, 4) }}
                     </TableCell>
-                    <TableCell class="analysis-weight-cell" data-label="Итоговый вес">
+                    <TableCell
+                      class="analysis-weight-cell"
+                      :data-label="t('analysis.rows.finalWeight')"
+                    >
                       {{ formatNumber(row.adjusted, 4) }}
                     </TableCell>
                     <TableCell
                       class="analysis-weight-cell"
-                      data-label="Изменение"
+                      :data-label="t('analysis.rows.change')"
                       :class="
                         row.delta >= 0 ? 'text-positive-foreground' : 'text-negative-foreground'
                       "
@@ -458,12 +496,12 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                     <TableCell
                       v-if="researcherMode"
                       class="analysis-weight-cell text-muted-foreground"
-                      data-label="Комментарий"
+                      :data-label="t('analysis.rows.comment')"
                     >
                       {{
                         row.active
-                          ? 'Участвует в целевой функции'
-                          : 'Информационная метрика, не участвует в целевой функции'
+                          ? t('analysis.participatingComment')
+                          : t('analysis.informationalComment')
                       }}
                     </TableCell>
                   </TableRow>
@@ -474,50 +512,65 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
 
           <TabsContent value="score" class="m-0 grid gap-4 p-4">
             <div class="rounded-lg border bg-background/70 p-3">
-              <p class="text-sm font-medium text-foreground">Описание оценки маршрута</p>
+              <p class="text-sm font-medium text-foreground">
+                {{ t('analysis.scoreDescriptionTitle') }}
+              </p>
               <p v-if="!researcherMode" class="mt-2 text-sm leading-6 text-muted-foreground">
-                Маршрут оценивается по трем основным критериям: расстояние, время в пути и полная
-                стоимость. Чем меньше итоговая оценка, тем лучше маршрут.
+                {{ t('analysis.scoreDescription') }}
               </p>
               <code
                 v-else
                 class="mt-2 block overflow-x-auto rounded-md bg-muted px-3 py-2 text-xs text-foreground"
               >
-                score = Σ(weight_i * normalized_metric_i) + constraint_penalty
+                score = sum(weight_i * normalized_metric_i) + constraint_penalty
               </code>
             </div>
 
             <div v-if="researcherMode" class="analysis-score-grid grid gap-4 xl:grid-cols-2">
               <section class="analysis-score-section rounded-lg border">
-                <div class="border-b px-3 py-2 text-sm font-medium">Выбранный маршрут</div>
+                <div class="border-b px-3 py-2 text-sm font-medium">
+                  {{ t('analysis.selectedRoute') }}
+                </div>
                 <ScrollArea class="analysis-score-scroll w-full">
                   <Table class="analysis-score-table">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Компонент</TableHead>
-                        <TableHead>Исходное</TableHead>
-                        <TableHead>Норма</TableHead>
-                        <TableHead>Вес</TableHead>
-                        <TableHead>Вклад</TableHead>
+                        <TableHead>{{ t('analysis.rows.component') }}</TableHead>
+                        <TableHead>{{ t('analysis.rows.raw') }}</TableHead>
+                        <TableHead>{{ t('analysis.rows.normalized') }}</TableHead>
+                        <TableHead>{{ t('analysis.rows.weight') }}</TableHead>
+                        <TableHead>{{ t('analysis.rows.contribution') }}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       <TableRow v-for="row in scoreRows" :key="row.key" class="analysis-score-row">
-                        <TableCell class="analysis-score-cell font-medium" data-label="Компонент">{{
-                          row.label
-                        }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Исходное">{{
-                          formatNumber(row.raw_value, 3)
-                        }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Норма">{{
-                          formatNumber(row.normalized_value, 3)
-                        }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Вес">{{
-                          formatNumber(row.weight, 4)
-                        }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Вклад">{{
-                          formatNumber(row.contribution, 4)
-                        }}</TableCell>
+                        <TableCell
+                          class="analysis-score-cell font-medium"
+                          :data-label="t('analysis.rows.component')"
+                        >
+                          {{ row.label }}
+                        </TableCell>
+                        <TableCell class="analysis-score-cell" :data-label="t('analysis.rows.raw')">
+                          {{ formatNumber(row.raw_value, 3) }}
+                        </TableCell>
+                        <TableCell
+                          class="analysis-score-cell"
+                          :data-label="t('analysis.rows.normalized')"
+                        >
+                          {{ formatNumber(row.normalized_value, 3) }}
+                        </TableCell>
+                        <TableCell
+                          class="analysis-score-cell"
+                          :data-label="t('analysis.rows.weight')"
+                        >
+                          {{ formatNumber(row.weight, 4) }}
+                        </TableCell>
+                        <TableCell
+                          class="analysis-score-cell"
+                          :data-label="t('analysis.rows.contribution')"
+                        >
+                          {{ formatNumber(row.contribution, 4) }}
+                        </TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -525,16 +578,18 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
               </section>
 
               <section class="analysis-score-section rounded-lg border">
-                <div class="border-b px-3 py-2 text-sm font-medium">Исходный маршрут</div>
+                <div class="border-b px-3 py-2 text-sm font-medium">
+                  {{ t('analysis.baselineRoute') }}
+                </div>
                 <ScrollArea class="analysis-score-scroll w-full">
                   <Table class="analysis-score-table">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Компонент</TableHead>
-                        <TableHead>Исходное</TableHead>
-                        <TableHead>Норма</TableHead>
-                        <TableHead>Вес</TableHead>
-                        <TableHead>Вклад</TableHead>
+                        <TableHead>{{ t('analysis.rows.component') }}</TableHead>
+                        <TableHead>{{ t('analysis.rows.raw') }}</TableHead>
+                        <TableHead>{{ t('analysis.rows.normalized') }}</TableHead>
+                        <TableHead>{{ t('analysis.rows.weight') }}</TableHead>
+                        <TableHead>{{ t('analysis.rows.contribution') }}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -543,21 +598,33 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                         :key="row.key"
                         class="analysis-score-row"
                       >
-                        <TableCell class="analysis-score-cell font-medium" data-label="Компонент">{{
-                          row.label
-                        }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Исходное">{{
-                          formatNumber(row.raw_value, 3)
-                        }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Норма">{{
-                          formatNumber(row.normalized_value, 3)
-                        }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Вес">{{
-                          formatNumber(row.weight, 4)
-                        }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Вклад">{{
-                          formatNumber(row.contribution, 4)
-                        }}</TableCell>
+                        <TableCell
+                          class="analysis-score-cell font-medium"
+                          :data-label="t('analysis.rows.component')"
+                        >
+                          {{ row.label }}
+                        </TableCell>
+                        <TableCell class="analysis-score-cell" :data-label="t('analysis.rows.raw')">
+                          {{ formatNumber(row.raw_value, 3) }}
+                        </TableCell>
+                        <TableCell
+                          class="analysis-score-cell"
+                          :data-label="t('analysis.rows.normalized')"
+                        >
+                          {{ formatNumber(row.normalized_value, 3) }}
+                        </TableCell>
+                        <TableCell
+                          class="analysis-score-cell"
+                          :data-label="t('analysis.rows.weight')"
+                        >
+                          {{ formatNumber(row.weight, 4) }}
+                        </TableCell>
+                        <TableCell
+                          class="analysis-score-cell"
+                          :data-label="t('analysis.rows.contribution')"
+                        >
+                          {{ formatNumber(row.contribution, 4) }}
+                        </TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -571,7 +638,7 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
               v-if="!matrixSections.length"
               class="rounded-lg border p-4 text-sm text-muted-foreground"
             >
-              Backend не вернул матрицы для этого запуска.
+              {{ t('analysis.noMatrices') }}
             </div>
 
             <section v-for="section in matrixSections" :key="section.key" class="rounded-lg border">
@@ -583,7 +650,9 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead class="sticky left-0 z-10 bg-card">Из / в</TableHead>
+                      <TableHead class="sticky left-0 z-10 bg-card">
+                        {{ t('analysis.fromTo') }}
+                      </TableHead>
                       <TableHead v-for="label in pointLabels" :key="label" class="min-w-28">
                         {{ label }}
                       </TableHead>
@@ -595,7 +664,7 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                       :key="`${section.key}-${rowIndex}`"
                     >
                       <TableCell class="sticky left-0 z-10 bg-card font-medium">
-                        {{ pointLabels[rowIndex] ?? `Точка ${rowIndex + 1}` }}
+                        {{ pointLabels[rowIndex] ?? t('analysis.point', { number: rowIndex + 1 }) }}
                       </TableCell>
                       <TableCell v-for="(_, columnIndex) in pointLabels" :key="columnIndex">
                         {{ formatMatrixCell(row[columnIndex]) }}
@@ -612,7 +681,7 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
 
     <Card v-if="researcherMode" class="analysis-section-card">
       <CardHeader>
-        <CardTitle class="text-base">Альтернативы и диагностика</CardTitle>
+        <CardTitle class="text-base">{{ t('analysis.alternativesTitle') }}</CardTitle>
       </CardHeader>
       <CardContent class="grid gap-4">
         <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -622,7 +691,9 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
             class="rounded-lg border p-3"
           >
             <div class="mb-2 flex items-center justify-between gap-2">
-              <p class="text-sm font-medium">Альтернатива {{ alternative.rank }}</p>
+              <p class="text-sm font-medium">
+                {{ t('analysis.alternative', { rank: alternative.rank }) }}
+              </p>
               <Button
                 variant="outline"
                 size="sm"
@@ -631,13 +702,20 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                     selectedAlternativeRank === alternative.rank ? null : alternative.rank
                 "
               >
-                {{ selectedAlternativeRank === alternative.rank ? 'Скрыть' : 'На карте' }}
+                {{
+                  selectedAlternativeRank === alternative.rank
+                    ? t('analysis.hide')
+                    : t('analysis.showOnMap')
+                }}
               </Button>
             </div>
             <div class="grid gap-1 text-xs text-muted-foreground">
-              <span>{{ formatNumber(alternative.metrics.distance_km, 1) }} км</span>
+              <span>
+                {{ formatNumber(alternative.metrics.distance_km, 1) }}
+                {{ t('route.units.kilometer') }}
+              </span>
               <span>{{ formatDuration(alternative.metrics.duration_min) }}</span>
-              <span>{{ formatNumber(alternative.metrics.co2_kg, 1) }} кг CO2</span>
+              <span>{{ formatNumber(alternative.metrics.co2_kg, 1) }} kg CO2</span>
             </div>
           </div>
         </div>
@@ -646,13 +724,13 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
           v-if="result.diagnostics"
           class="grid gap-2 rounded-lg border p-3 text-sm sm:grid-cols-2"
         >
-          <span class="text-muted-foreground">Режим</span>
+          <span class="text-muted-foreground">{{ t('analysis.diagnostics.mode') }}</span>
           <span>{{ result.diagnostics.mode }}</span>
-          <span class="text-muted-foreground">Оценено решений</span>
+          <span class="text-muted-foreground">{{ t('analysis.diagnostics.evaluated') }}</span>
           <span>{{ result.diagnostics.evaluated_solutions }}</span>
-          <span class="text-muted-foreground">Исправлено решений</span>
+          <span class="text-muted-foreground">{{ t('analysis.diagnostics.repaired') }}</span>
           <span>{{ result.diagnostics.repaired_solutions }}</span>
-          <span class="text-muted-foreground">Запрещенные ребра</span>
+          <span class="text-muted-foreground">{{ t('analysis.diagnostics.forbiddenEdges') }}</span>
           <span>{{ result.diagnostics.forbidden_edges }}</span>
         </div>
       </CardContent>

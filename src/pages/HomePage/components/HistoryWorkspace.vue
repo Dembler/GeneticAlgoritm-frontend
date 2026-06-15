@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Search, SlidersHorizontal } from 'lucide-vue-next'
 
 import {
@@ -41,13 +42,18 @@ const emit = defineEmits<{
   openRun: [runId: string]
 }>()
 
-const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-})
+const { locale, t } = useI18n({ useScope: 'global' })
+
+const dateFormatter = computed(
+  () =>
+    new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+)
 
 const query = ref('')
 const feasibleFilter = ref('all')
@@ -94,21 +100,25 @@ function runNumber(run: RouteRunListItem, key: string) {
 }
 
 function formatDistance(value: number | null) {
-  return value === null ? 'нет данных' : `${formatNumber(value, 1)} км`
+  return value === null
+    ? t('settings.noData')
+    : `${formatNumber(value, 1)} ${t('route.units.kilometer')}`
 }
 
 function formatMinutes(value: number | null) {
-  return value === null ? 'нет данных' : `${formatNumber(value, 0)} мин`
+  return value === null
+    ? t('settings.noData')
+    : t('route.units.minute', { minutes: formatNumber(value, 0) })
 }
 
 function formatScore(value: number | null | undefined) {
-  return value === null || value === undefined ? 'нет данных' : formatNumber(value, 2)
+  return value === null || value === undefined ? t('settings.noData') : formatNumber(value, 2)
 }
 
 function formatCreatedAt(value: string) {
   const date = new Date(value)
 
-  return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date)
+  return Number.isNaN(date.getTime()) ? value : dateFormatter.value.format(date)
 }
 </script>
 
@@ -116,10 +126,10 @@ function formatCreatedAt(value: string) {
   <div class="grid min-w-0 max-w-full gap-5 overflow-hidden">
     <header class="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div class="min-w-0">
-        <Badge variant="outline" class="mb-2">Журнал расчетов</Badge>
-        <h1 class="text-2xl font-semibold text-foreground">История запусков</h1>
+        <Badge variant="outline" class="mb-2">{{ t('history.badge') }}</Badge>
+        <h1 class="text-2xl font-semibold text-foreground">{{ t('history.title') }}</h1>
         <p class="mt-1 text-sm text-muted-foreground">
-          Список сохраненных запусков сервиса маршрутизации.
+          {{ t('history.description') }}
         </p>
       </div>
 
@@ -128,78 +138,74 @@ function formatCreatedAt(value: string) {
           <Search
             class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           />
-          <Input
-            v-model="query"
-            class="rounded-xl pl-9"
-            placeholder="Поиск по запуску, типу, приоритету"
-          />
+          <Input v-model="query" class="rounded-xl pl-9" :placeholder="t('history.search')" />
         </div>
-        <Select v-model="feasibleFilter" aria-label="Фильтр статуса">
+        <Select v-model="feasibleFilter" :aria-label="t('history.statusFilter')">
           <SelectTrigger class="w-full rounded-xl sm:w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все статусы</SelectItem>
-            <SelectItem value="feasible">Допустимые</SelectItem>
-            <SelectItem value="infeasible">С ограничениями</SelectItem>
+            <SelectItem value="all">{{ t('history.allStatuses') }}</SelectItem>
+            <SelectItem value="feasible">{{ t('history.feasible') }}</SelectItem>
+            <SelectItem value="infeasible">{{ t('history.infeasible') }}</SelectItem>
           </SelectContent>
         </Select>
-        <Select v-model="providerFilter" aria-label="Фильтр провайдера">
+        <Select v-model="providerFilter" :aria-label="t('history.providerFilter')">
           <SelectTrigger class="w-full rounded-xl sm:w-52">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem v-for="provider in providerOptions" :key="provider" :value="provider">
-              {{ provider === 'all' ? 'Все провайдеры' : formatProvider(provider) }}
+              {{ provider === 'all' ? t('history.allProviders') : formatProvider(provider) }}
             </SelectItem>
           </SelectContent>
         </Select>
         <Button variant="outline" class="w-full rounded-xl sm:w-auto" disabled>
           <SlidersHorizontal class="size-4" />
-          Фильтры
+          {{ t('history.filters') }}
         </Button>
         <Button class="w-full rounded-xl sm:w-auto" :disabled="loading" @click="emit('refresh')">
-          Обновить
+          {{ t('settings.refresh') }}
         </Button>
       </div>
     </header>
 
     <Card class="min-w-0 overflow-hidden">
       <CardHeader>
-        <CardTitle class="text-base">Последние расчеты</CardTitle>
+        <CardTitle class="text-base">{{ t('history.latest') }}</CardTitle>
       </CardHeader>
       <CardContent class="min-w-0 overflow-hidden">
         <div v-if="error" class="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
-          Backend недоступен для истории запусков.
+          {{ t('history.backendError') }}
         </div>
 
         <div
           v-else-if="!runs.length"
           class="rounded-xl border border-dashed p-5 text-sm text-muted-foreground"
         >
-          История пока пустая. После первого успешного расчета здесь появятся сохраненные запуски.
+          {{ t('history.empty') }}
         </div>
 
         <div
           v-else-if="!filteredRuns.length"
           class="rounded-xl border border-dashed p-5 text-sm text-muted-foreground"
         >
-          По текущим фильтрам запусков не найдено.
+          {{ t('history.noResults') }}
         </div>
 
         <div v-else class="max-w-full overflow-x-auto">
           <Table class="min-w-[56rem]">
             <TableHeader>
               <TableRow>
-                <TableHead>Дата запуска</TableHead>
-                <TableHead>ID запуска</TableHead>
-                <TableHead>Провайдер</TableHead>
-                <TableHead>Расстояние</TableHead>
-                <TableHead>Время</TableHead>
-                <TableHead>Улучшение</TableHead>
-                <TableHead>Оценка</TableHead>
-                <TableHead>Допустимость</TableHead>
-                <TableHead class="text-right">Действие</TableHead>
+                <TableHead>{{ t('history.columns.createdAt') }}</TableHead>
+                <TableHead>{{ t('history.columns.runId') }}</TableHead>
+                <TableHead>{{ t('history.columns.provider') }}</TableHead>
+                <TableHead>{{ t('history.columns.distance') }}</TableHead>
+                <TableHead>{{ t('history.columns.duration') }}</TableHead>
+                <TableHead>{{ t('history.columns.improvement') }}</TableHead>
+                <TableHead>{{ t('history.columns.score') }}</TableHead>
+                <TableHead>{{ t('history.columns.feasibility') }}</TableHead>
+                <TableHead class="text-right">{{ t('history.columns.action') }}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -213,7 +219,7 @@ function formatCreatedAt(value: string) {
                 <TableCell>{{ formatMissing(formatScore(run.objective_score)) }}</TableCell>
                 <TableCell>
                   <Badge :variant="Number(run.feasible_count) > 0 ? 'secondary' : 'outline'">
-                    {{ Number(run.feasible_count) > 0 ? 'допустим' : 'нет данных' }}
+                    {{ Number(run.feasible_count) > 0 ? t('history.valid') : t('settings.noData') }}
                   </Badge>
                 </TableCell>
                 <TableCell class="text-right">
@@ -223,7 +229,7 @@ function formatCreatedAt(value: string) {
                     class="rounded-xl"
                     @click="emit('openRun', run.run_id)"
                   >
-                    Открыть
+                    {{ t('history.open') }}
                   </Button>
                 </TableCell>
               </TableRow>

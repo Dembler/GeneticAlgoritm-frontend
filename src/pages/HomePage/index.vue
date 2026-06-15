@@ -89,7 +89,7 @@ watch(
               variant="outline"
               size="icon"
               class="ml-auto rounded-xl"
-              aria-label="Открыть меню"
+              :aria-label="t('common.openMenu')"
               @click="mobileMenuOpen = true"
             >
               <Menu class="size-4" />
