@@ -186,9 +186,16 @@ watch(
 }
 
 .theme-switch {
-  width: 3.25rem;
+  --theme-switch-width: 3.25rem;
+  --theme-switch-thumb-size: 1.375rem;
+  --theme-switch-thumb-offset: 0.1875rem;
+
+  position: relative;
+  box-sizing: border-box;
+  width: var(--theme-switch-width);
   height: 1.875rem;
   flex-shrink: 0;
+  overflow: hidden;
   border: 1px solid var(--border);
   background: var(--muted);
   box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--foreground) 5%, transparent);
@@ -201,18 +208,23 @@ watch(
 
 .theme-switch :deep([data-slot='switch-thumb']) {
   display: inline-flex;
-  width: 1.375rem;
-  height: 1.375rem;
+  width: var(--theme-switch-thumb-size);
+  height: var(--theme-switch-thumb-size);
   align-items: center;
   justify-content: center;
   color: var(--foreground);
-  transform: translateX(0.125rem);
+  transform: translateX(var(--theme-switch-thumb-offset));
   box-shadow: 0 1px 4px hsl(0 0% 0% / 0.18);
 }
 
 .theme-switch[data-state='checked'] :deep([data-slot='switch-thumb']) {
   color: var(--primary);
-  transform: translateX(1.5rem);
+  transform: translateX(
+    calc(
+      var(--theme-switch-width) - var(--theme-switch-thumb-size) -
+        (var(--theme-switch-thumb-offset) * 2)
+    )
+  );
 }
 
 @media (min-width: 520px) {
