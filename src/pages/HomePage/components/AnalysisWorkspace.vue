@@ -503,11 +503,21 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                     </TableHeader>
                     <TableBody>
                       <TableRow v-for="row in scoreRows" :key="row.key" class="analysis-score-row">
-                        <TableCell class="analysis-score-cell font-medium" data-label="Компонент">{{ row.label }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Исходное">{{ formatNumber(row.raw_value, 3) }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Норма">{{ formatNumber(row.normalized_value, 3) }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Вес">{{ formatNumber(row.weight, 4) }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Вклад">{{ formatNumber(row.contribution, 4) }}</TableCell>
+                        <TableCell class="analysis-score-cell font-medium" data-label="Компонент">{{
+                          row.label
+                        }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Исходное">{{
+                          formatNumber(row.raw_value, 3)
+                        }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Норма">{{
+                          formatNumber(row.normalized_value, 3)
+                        }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Вес">{{
+                          formatNumber(row.weight, 4)
+                        }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Вклад">{{
+                          formatNumber(row.contribution, 4)
+                        }}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -533,11 +543,21 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                         :key="row.key"
                         class="analysis-score-row"
                       >
-                        <TableCell class="analysis-score-cell font-medium" data-label="Компонент">{{ row.label }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Исходное">{{ formatNumber(row.raw_value, 3) }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Норма">{{ formatNumber(row.normalized_value, 3) }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Вес">{{ formatNumber(row.weight, 4) }}</TableCell>
-                        <TableCell class="analysis-score-cell" data-label="Вклад">{{ formatNumber(row.contribution, 4) }}</TableCell>
+                        <TableCell class="analysis-score-cell font-medium" data-label="Компонент">{{
+                          row.label
+                        }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Исходное">{{
+                          formatNumber(row.raw_value, 3)
+                        }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Норма">{{
+                          formatNumber(row.normalized_value, 3)
+                        }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Вес">{{
+                          formatNumber(row.weight, 4)
+                        }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Вклад">{{
+                          formatNumber(row.contribution, 4)
+                        }}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
