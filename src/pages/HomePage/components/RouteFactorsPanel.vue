@@ -100,7 +100,7 @@ const accountedFactors = [
   align-items: center;
   gap: 0.45rem;
   min-height: 2rem;
-  border: 1px solid hsl(0 0% 0% / 0.12);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   background: var(--background);
   padding: 0.375rem 0.5rem;
@@ -113,7 +113,7 @@ const accountedFactors = [
 
 .factor-icon {
   flex-shrink: 0;
-  color: hsl(208 78% 45%);
+  color: var(--chart-1);
 }
 
 .factor-chip span {
@@ -122,34 +122,34 @@ const accountedFactors = [
 }
 
 .factor-chip:nth-child(2) .factor-icon {
-  color: hsl(152 58% 36%);
+  color: var(--chart-2);
 }
 
 .factor-chip:nth-child(3) .factor-icon {
-  color: hsl(31 92% 50%);
+  color: var(--chart-3);
 }
 
 .factor-chip:nth-child(4) .factor-icon {
-  color: hsl(262 64% 54%);
+  color: var(--chart-4);
 }
 
 .factor-chip:nth-child(5) .factor-icon {
-  color: hsl(188 72% 38%);
+  color: var(--chart-1);
 }
 
 .factor-chip:nth-child(6) .factor-icon {
-  color: hsl(18 90% 52%);
+  color: var(--chart-5);
 }
 
 .factor-chip:nth-child(7) .factor-icon {
-  color: hsl(220 70% 48%);
+  color: var(--chart-1);
 }
 
 .factor-chip:nth-child(8) .factor-icon {
-  color: hsl(292 56% 48%);
+  color: var(--chart-4);
 }
 
 .factor-chip:nth-child(9) .factor-icon {
-  color: hsl(135 50% 36%);
+  color: var(--chart-2);
 }
 </style>

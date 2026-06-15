@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { CheckCircle2, XCircle } from 'lucide-vue-next'
+import { Clock3, Fuel, Route, Scale, ShieldAlert, ShieldCheck } from 'lucide-vue-next'
 
 import { Badge, Card, CardContent, CardHeader, CardTitle } from '@/shared/ui'
 import type { RouteResponse } from '@/shared/api/route.types'
@@ -175,6 +175,7 @@ const criterionContributions = computed(() => {
       detail: 'влияет на пробег и ресурс транспорта',
       positive: (comparisonImprovement.value?.distance_km ?? 0) >= 0,
       accent: 'blue',
+      icon: Route,
     },
     {
       label: 'Время',
@@ -184,6 +185,7 @@ const criterionContributions = computed(() => {
       detail: 'учитывает скорость, трафик и задержки',
       positive: (comparisonImprovement.value?.duration_min ?? 0) >= 0,
       accent: 'emerald',
+      icon: Clock3,
     },
     {
       label: 'Стоимость',
@@ -196,6 +198,7 @@ const criterionContributions = computed(() => {
       detail: 'топливо, водитель, обслуживание и платные дороги',
       positive: (comparisonImprovement.value?.operational_cost ?? 0) >= 0,
       accent: 'amber',
+      icon: Scale,
     },
     {
       label: 'Топливо',
@@ -205,6 +208,7 @@ const criterionContributions = computed(() => {
       detail: 'снижает расход и связанные выбросы',
       positive: (fuelImprovement ?? 0) >= 0,
       accent: 'violet',
+      icon: Fuel,
     },
     {
       label: 'Риск',
@@ -214,6 +218,7 @@ const criterionContributions = computed(() => {
       detail: 'дороги, погода, события и грузовые ограничения',
       positive: (riskImprovement ?? 0) >= 0 && current.feasible,
       accent: 'rose',
+      icon: ShieldAlert,
     },
     {
       label: 'Надежность',
@@ -223,6 +228,7 @@ const criterionContributions = computed(() => {
       detail: 'вероятность стабильного прохождения маршрута',
       positive: (reliabilityImprovement ?? 0) >= 0,
       accent: 'sky',
+      icon: ShieldCheck,
     },
   ]
 })
@@ -230,7 +236,7 @@ const criterionContributions = computed(() => {
 
 <template>
   <Card class="decision-card">
-    <CardHeader class="pb-3">
+    <CardHeader class="decision-header">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <CardTitle class="text-base">Почему выбран этот маршрут</CardTitle>
         <div class="flex flex-wrap gap-2">
@@ -248,20 +254,20 @@ const criterionContributions = computed(() => {
         </div>
       </div>
     </CardHeader>
-    <CardContent>
-      <p class="mb-3 text-sm leading-6 text-muted-foreground">
+    <CardContent class="decision-content">
+      <p class="mb-2 text-sm leading-6 text-muted-foreground">
         {{ subtitle }}
       </p>
 
       <div
         v-if="diagnostics?.baseline_guard_applied || decisionSummary?.baseline_guard_applied"
-        class="mb-3 rounded-lg border bg-muted/40 p-3 text-sm leading-6 text-muted-foreground"
+        class="mb-2 rounded-lg border bg-muted/40 p-3 text-sm leading-6 text-muted-foreground"
       >
         Оптимизатор не нашел вариант лучше исходного порядка точек. Для сохранения качества выбран
         исходный маршрут.
       </div>
 
-      <div class="mb-3">
+      <div>
         <p class="mb-2 text-xs font-medium uppercase text-muted-foreground">Вклад критериев</p>
         <div class="criterion-grid">
           <div
@@ -273,22 +279,15 @@ const criterionContributions = computed(() => {
               `criterion-card--${criterion.accent}`,
             ]"
           >
-            <span>{{ criterion.label }}</span>
+            <div class="criterion-card__head">
+              <span class="criterion-card__label">{{ criterion.label }}</span>
+              <span class="criterion-card__icon">
+                <component :is="criterion.icon" class="size-4" />
+              </span>
+            </div>
             <strong>{{ criterion.value }}</strong>
             <small>{{ criterion.detail }}</small>
           </div>
-        </div>
-      </div>
-
-      <div class="decision-grid">
-        <div
-          v-for="reason in reasons"
-          :key="reason.text"
-          class="decision-row"
-          :class="reason.positive ? 'decision-row--positive' : 'decision-row--negative'"
-        >
-          <component :is="reason.positive ? CheckCircle2 : XCircle" class="size-4" />
-          <span class="min-w-0">{{ reason.text }}</span>
         </div>
       </div>
     </CardContent>
@@ -297,15 +296,18 @@ const criterionContributions = computed(() => {
 
 <style scoped>
 .decision-card {
-  background: color-mix(in oklch, var(--card) 92%, transparent);
-  box-shadow: 0 16px 45px hsl(0 0% 0% / 0.055);
-  backdrop-filter: blur(12px);
+  background: var(--card);
+  gap: 0;
+  padding-block: 0;
+  box-shadow: 0 8px 24px hsl(0 0% 0% / 0.04);
 }
 
-.decision-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-  gap: 0.625rem;
+.decision-header {
+  padding: 1rem 1.25rem 0.5rem;
+}
+
+.decision-content {
+  padding: 0 1.25rem 1rem;
 }
 
 .criterion-grid {
@@ -321,29 +323,38 @@ const criterionContributions = computed(() => {
   min-width: 0;
   overflow: hidden;
   gap: 0.375rem;
-  border: 1px solid color-mix(in oklch, var(--criterion-accent) 30%, var(--border));
-  border-radius: 0.75rem;
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklch, var(--criterion-accent) 7%, var(--background)),
-    var(--background) 76%
-  );
-  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  background: var(--background);
+  padding: 0.75rem 0.875rem;
 }
 
-.criterion-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 3px;
-  background: var(--criterion-accent);
+.criterion-card__head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
-.criterion-card span {
-  color: color-mix(in oklch, var(--criterion-accent) 58%, var(--muted-foreground));
+.criterion-card__label {
+  color: var(--muted-foreground);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.criterion-card__icon {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--card);
+  color: color-mix(in oklch, var(--criterion-accent) 62%, var(--foreground));
 }
 
 .criterion-card strong {
@@ -359,11 +370,11 @@ const criterionContributions = computed(() => {
 }
 
 .criterion-card--positive {
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--positive-foreground) 8%, transparent);
+  box-shadow: none;
 }
 
 .criterion-card--negative {
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--negative-foreground) 10%, transparent);
+  box-shadow: none;
 }
 
 .criterion-card--blue {
@@ -387,37 +398,6 @@ const criterionContributions = computed(() => {
 }
 
 .criterion-card--sky {
-  --criterion-accent: hsl(194 78% 42%);
-}
-
-.decision-row {
-  --decision-accent: var(--positive-foreground);
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.625rem;
-  border: 1px solid color-mix(in oklch, var(--decision-accent) 26%, var(--border));
-  border-radius: 0.75rem;
-  background: color-mix(in oklch, var(--decision-accent) 5%, var(--background));
-  padding: 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.decision-row svg {
-  color: var(--decision-accent);
-}
-
-.decision-row--positive {
-  --decision-accent: var(--positive-foreground);
-}
-
-.decision-row--negative {
-  --decision-accent: var(--negative-foreground);
-}
-
-:global(.dark) .criterion-card--sky {
-  --criterion-accent: hsl(194 82% 64%);
+  --criterion-accent: var(--chart-1);
 }
 </style>

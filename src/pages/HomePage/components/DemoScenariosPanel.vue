@@ -322,7 +322,7 @@ function runScenario(scenario: Scenario) {
   border-radius: 0.625rem;
   border: 1px solid var(--border);
   background: var(--card);
-  color: hsl(208 78% 45%);
+  color: var(--chart-1);
   box-shadow: none;
 }
 
@@ -339,35 +339,35 @@ function runScenario(scenario: Scenario) {
 }
 
 .scenario-card:nth-child(2) .scenario-icon {
-  color: hsl(18 90% 52%);
+  color: var(--chart-5);
 }
 
 .scenario-card:nth-child(3) .scenario-icon {
-  color: hsl(31 92% 50%);
+  color: var(--chart-3);
 }
 
 .scenario-card:nth-child(4) .scenario-icon {
-  color: hsl(135 50% 36%);
+  color: var(--chart-2);
 }
 
 .scenario-card:nth-child(5) .scenario-icon {
-  color: hsl(262 64% 54%);
+  color: var(--chart-4);
 }
 
 .scenario-card:nth-child(6) .scenario-icon {
-  color: hsl(220 70% 48%);
+  color: var(--chart-1);
 }
 
 .scenario-card:nth-child(7) .scenario-icon {
-  color: hsl(292 56% 48%);
+  color: var(--chart-4);
 }
 
 .scenario-card:nth-child(8) .scenario-icon {
-  color: hsl(188 72% 38%);
+  color: var(--chart-1);
 }
 
 .scenario-card:nth-child(9) .scenario-icon {
-  color: hsl(345 72% 48%);
+  color: var(--chart-5);
 }
 
 @media (max-width: 640px) {

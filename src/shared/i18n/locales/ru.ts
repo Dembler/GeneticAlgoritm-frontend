@@ -26,6 +26,8 @@ const ru = {
     themeLabel: 'Тема',
     themeHint: 'Переключение между светлой и темной темой.',
     themeSwitchAria: 'Темная тема',
+    themeLight: 'Светлая',
+    themeDark: 'Темная',
     backendLabel: 'Backend',
     versionUnavailable: 'версия не получена',
     lastCheck: 'Последняя проверка: {value}',

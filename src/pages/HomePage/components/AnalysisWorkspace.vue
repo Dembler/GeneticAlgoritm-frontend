@@ -146,18 +146,21 @@ const summaryCards = computed(() => {
       value: formatImprovement(comparison.improvement_pct.distance_km, 1),
       detail: `${formatNumber(Math.abs(comparison.delta.distance_km), 1)} км`,
       icon: Route,
+      accent: 'blue',
     },
     {
       label: 'Экономия времени',
       value: formatImprovement(comparison.improvement_pct.duration_min, 1),
       detail: formatDuration(Math.abs(comparison.delta.duration_min)),
       icon: Activity,
+      accent: 'emerald',
     },
     {
       label: 'Итоговая стоимость',
       value: formatMoney(current.operational_cost, currency.value, true),
       detail: `${formatImprovement(comparison.improvement_pct.operational_cost, 1)} к исходному`,
       icon: Scale,
+      accent: 'amber',
     },
     {
       label: 'Источник данных',
@@ -166,6 +169,7 @@ const summaryCards = computed(() => {
         ? `достоверность ${formatPercent(props.result.data_confidence.score, 1)}`
         : 'нет оценки достоверности',
       icon: Database,
+      accent: 'violet',
     },
   ]
 })
@@ -284,7 +288,7 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
 </script>
 
 <template>
-  <div v-if="result" class="grid min-w-0 gap-5">
+  <div v-if="result" class="analysis-workspace grid min-w-0 gap-5">
     <header class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
       <div class="grid gap-2">
         <Badge variant="outline" class="w-fit">Текущий запуск</Badge>
@@ -301,38 +305,45 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
     </header>
 
     <div class="grid gap-4 lg:grid-cols-4">
-      <Card v-for="card in summaryCards" :key="card.label">
-        <CardHeader class="pb-2">
+      <Card
+        v-for="card in summaryCards"
+        :key="card.label"
+        class="analysis-summary-card"
+        :class="`analysis-summary-card--${card.accent}`"
+      >
+        <CardHeader class="analysis-summary-card__header">
           <CardTitle class="flex items-center gap-2 text-sm">
-            <component :is="card.icon" class="size-4 text-primary" />
+            <span class="analysis-summary-card__icon">
+              <component :is="card.icon" class="size-4" />
+            </span>
             {{ card.label }}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent class="analysis-summary-card__content">
           <strong class="text-2xl font-semibold leading-tight">{{ card.value }}</strong>
           <p class="mt-1 text-xs text-muted-foreground">{{ card.detail }}</p>
         </CardContent>
       </Card>
     </div>
 
-    <Card>
+    <Card class="analysis-section-card">
       <CardHeader>
         <CardTitle class="text-base">Результат оптимизации</CardTitle>
       </CardHeader>
       <CardContent class="grid gap-4">
         <div class="grid gap-3 lg:grid-cols-2">
-          <div class="rounded-lg border bg-background/70 p-3">
+          <div class="analysis-route-card analysis-route-card--baseline">
             <p class="text-xs font-medium uppercase text-muted-foreground">Исходный маршрут</p>
             <p class="mt-2 text-sm leading-6 text-foreground">{{ routeOrder.baseline }}</p>
           </div>
-          <div class="rounded-lg border bg-primary/5 p-3">
+          <div class="analysis-route-card analysis-route-card--optimized">
             <p class="text-xs font-medium uppercase text-muted-foreground">Выбранный маршрут</p>
             <p class="mt-2 text-sm leading-6 text-foreground">{{ routeOrder.optimized }}</p>
           </div>
         </div>
 
-        <ScrollArea class="w-full">
-          <Table>
+        <ScrollArea class="analysis-table-scroll w-full">
+          <Table class="analysis-comparison-table">
             <TableHeader>
               <TableRow>
                 <TableHead>Показатель</TableHead>
@@ -343,14 +354,26 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="row in comparisonRows" :key="row.label">
-                <TableCell class="font-medium">{{ row.label }}</TableCell>
-                <TableCell>{{ row.baseline }}</TableCell>
-                <TableCell>{{ row.optimized }}</TableCell>
-                <TableCell>{{ row.delta }}</TableCell>
-                <TableCell class="font-medium text-positive-foreground">{{
-                  row.improvement
-                }}</TableCell>
+              <TableRow
+                v-for="row in comparisonRows"
+                :key="row.label"
+                class="analysis-comparison-row"
+              >
+                <TableCell class="analysis-comparison-cell font-medium" data-label="Показатель">
+                  {{ row.label }}
+                </TableCell>
+                <TableCell class="analysis-comparison-cell" data-label="Исходный">
+                  {{ row.baseline }}
+                </TableCell>
+                <TableCell class="analysis-comparison-cell" data-label="Выбранный">
+                  {{ row.optimized }}
+                </TableCell>
+                <TableCell class="analysis-comparison-cell" data-label="Разница">
+                  {{ row.delta }}
+                </TableCell>
+                <TableCell class="analysis-comparison-cell" data-label="Улучшение">
+                  <span class="analysis-improvement">{{ row.improvement }}</span>
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -358,7 +381,7 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
       </CardContent>
     </Card>
 
-    <Card>
+    <Card class="analysis-section-card">
       <CardHeader>
         <CardTitle class="flex items-center gap-2 text-base">
           <Calculator class="size-4 text-primary" />
@@ -401,8 +424,8 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
               </span>
             </div>
 
-            <ScrollArea class="w-full">
-              <Table>
+            <ScrollArea class="analysis-weight-scroll w-full">
+              <Table class="analysis-weight-table">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Критерий</TableHead>
@@ -413,18 +436,30 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow v-for="row in weightRows" :key="row.key">
-                    <TableCell class="font-medium">{{ row.label }}</TableCell>
-                    <TableCell>{{ formatNumber(row.base, 4) }}</TableCell>
-                    <TableCell>{{ formatNumber(row.adjusted, 4) }}</TableCell>
+                  <TableRow v-for="row in weightRows" :key="row.key" class="analysis-weight-row">
+                    <TableCell class="analysis-weight-cell font-medium" data-label="Критерий">
+                      {{ row.label }}
+                    </TableCell>
+                    <TableCell class="analysis-weight-cell" data-label="Базовый вес">
+                      {{ formatNumber(row.base, 4) }}
+                    </TableCell>
+                    <TableCell class="analysis-weight-cell" data-label="Итоговый вес">
+                      {{ formatNumber(row.adjusted, 4) }}
+                    </TableCell>
                     <TableCell
+                      class="analysis-weight-cell"
+                      data-label="Изменение"
                       :class="
                         row.delta >= 0 ? 'text-positive-foreground' : 'text-negative-foreground'
                       "
                     >
                       {{ row.delta >= 0 ? '+' : '' }}{{ formatNumber(row.delta, 4) }}
                     </TableCell>
-                    <TableCell v-if="researcherMode" class="text-muted-foreground">
+                    <TableCell
+                      v-if="researcherMode"
+                      class="analysis-weight-cell text-muted-foreground"
+                      data-label="Комментарий"
+                    >
                       {{
                         row.active
                           ? 'Участвует в целевой функции'
@@ -452,11 +487,11 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
               </code>
             </div>
 
-            <div v-if="researcherMode" class="grid gap-4 xl:grid-cols-2">
-              <section class="rounded-lg border">
+            <div v-if="researcherMode" class="analysis-score-grid grid gap-4 xl:grid-cols-2">
+              <section class="analysis-score-section rounded-lg border">
                 <div class="border-b px-3 py-2 text-sm font-medium">Выбранный маршрут</div>
-                <ScrollArea class="w-full">
-                  <Table>
+                <ScrollArea class="analysis-score-scroll w-full">
+                  <Table class="analysis-score-table">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Компонент</TableHead>
@@ -467,22 +502,22 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow v-for="row in scoreRows" :key="row.key">
-                        <TableCell class="font-medium">{{ row.label }}</TableCell>
-                        <TableCell>{{ formatNumber(row.raw_value, 3) }}</TableCell>
-                        <TableCell>{{ formatNumber(row.normalized_value, 3) }}</TableCell>
-                        <TableCell>{{ formatNumber(row.weight, 4) }}</TableCell>
-                        <TableCell>{{ formatNumber(row.contribution, 4) }}</TableCell>
+                      <TableRow v-for="row in scoreRows" :key="row.key" class="analysis-score-row">
+                        <TableCell class="analysis-score-cell font-medium" data-label="Компонент">{{ row.label }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Исходное">{{ formatNumber(row.raw_value, 3) }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Норма">{{ formatNumber(row.normalized_value, 3) }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Вес">{{ formatNumber(row.weight, 4) }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Вклад">{{ formatNumber(row.contribution, 4) }}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
                 </ScrollArea>
               </section>
 
-              <section class="rounded-lg border">
+              <section class="analysis-score-section rounded-lg border">
                 <div class="border-b px-3 py-2 text-sm font-medium">Исходный маршрут</div>
-                <ScrollArea class="w-full">
-                  <Table>
+                <ScrollArea class="analysis-score-scroll w-full">
+                  <Table class="analysis-score-table">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Компонент</TableHead>
@@ -493,12 +528,16 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow v-for="row in baselineScoreRows" :key="row.key">
-                        <TableCell class="font-medium">{{ row.label }}</TableCell>
-                        <TableCell>{{ formatNumber(row.raw_value, 3) }}</TableCell>
-                        <TableCell>{{ formatNumber(row.normalized_value, 3) }}</TableCell>
-                        <TableCell>{{ formatNumber(row.weight, 4) }}</TableCell>
-                        <TableCell>{{ formatNumber(row.contribution, 4) }}</TableCell>
+                      <TableRow
+                        v-for="row in baselineScoreRows"
+                        :key="row.key"
+                        class="analysis-score-row"
+                      >
+                        <TableCell class="analysis-score-cell font-medium" data-label="Компонент">{{ row.label }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Исходное">{{ formatNumber(row.raw_value, 3) }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Норма">{{ formatNumber(row.normalized_value, 3) }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Вес">{{ formatNumber(row.weight, 4) }}</TableCell>
+                        <TableCell class="analysis-score-cell" data-label="Вклад">{{ formatNumber(row.contribution, 4) }}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -551,7 +590,7 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
       </CardContent>
     </Card>
 
-    <Card v-if="researcherMode">
+    <Card v-if="researcherMode" class="analysis-section-card">
       <CardHeader>
         <CardTitle class="text-base">Альтернативы и диагностика</CardTitle>
       </CardHeader>
@@ -600,3 +639,242 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
     </Card>
   </div>
 </template>
+
+<style scoped>
+.analysis-summary-card {
+  --analysis-accent: var(--chart-1);
+
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in oklch, var(--analysis-accent) 14%, var(--border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--analysis-accent) 4%, var(--card)),
+    var(--card) 58%
+  );
+  gap: 0;
+  padding-block: 0;
+  box-shadow: 0 10px 24px hsl(0 0% 0% / 0.045);
+}
+
+.analysis-summary-card__header {
+  padding: 1rem 1.25rem 0.625rem;
+}
+
+.analysis-summary-card__content {
+  padding: 0 1.25rem 1rem;
+}
+
+.analysis-summary-card__icon {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in oklch, var(--analysis-accent) 18%, var(--border));
+  border-radius: 0.5rem;
+  background: color-mix(in oklch, var(--analysis-accent) 7%, var(--card));
+  color: color-mix(in oklch, var(--analysis-accent) 58%, var(--foreground));
+}
+
+.analysis-summary-card--blue {
+  --analysis-accent: var(--chart-1);
+}
+
+.analysis-summary-card--emerald {
+  --analysis-accent: var(--chart-2);
+}
+
+.analysis-summary-card--amber {
+  --analysis-accent: var(--chart-3);
+}
+
+.analysis-summary-card--violet {
+  --analysis-accent: var(--chart-4);
+}
+
+.analysis-route-card {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  min-width: 0;
+}
+
+.analysis-route-card p {
+  overflow-wrap: anywhere;
+}
+
+.analysis-section-card {
+  gap: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding-block: 0;
+}
+
+.analysis-section-card :deep([data-slot='card-header']) {
+  padding: 1.25rem 1.5rem 0.75rem;
+}
+
+.analysis-section-card :deep([data-slot='card-content']) {
+  min-width: 0;
+  padding: 0 1.5rem 1.25rem;
+}
+
+.analysis-table-scroll {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.analysis-score-grid,
+.analysis-score-section,
+.analysis-score-scroll,
+.analysis-weight-scroll {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.analysis-score-section {
+  overflow: hidden;
+}
+
+.analysis-section-card section {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.analysis-route-card--baseline {
+  background: var(--background);
+}
+
+.analysis-route-card--optimized {
+  border-color: color-mix(in oklch, var(--chart-2) 16%, var(--border));
+  background: color-mix(in oklch, var(--chart-2) 5%, var(--background));
+}
+
+.analysis-improvement {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in oklch, var(--chart-2) 22%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--chart-2) 7%, var(--card));
+  padding: 0.125rem 0.5rem;
+  color: color-mix(in oklch, var(--chart-2) 68%, var(--foreground));
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+:global(.dark) .analysis-summary-card {
+  box-shadow: 0 12px 28px hsl(0 0% 0% / 0.22);
+}
+
+@media (max-width: 640px) {
+  .analysis-workspace {
+    gap: 1rem;
+  }
+
+  .analysis-workspace > header {
+    gap: 0.75rem;
+  }
+
+  .analysis-workspace > header label {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .analysis-summary-card__header {
+    padding: 0.875rem 1rem 0.5rem;
+  }
+
+  .analysis-summary-card__content {
+    padding: 0 1rem 0.875rem;
+  }
+
+  .analysis-section-card {
+    border-radius: 0.875rem;
+  }
+
+  .analysis-section-card :deep([data-slot='card-header']) {
+    padding: 1rem 1rem 0.625rem;
+  }
+
+  .analysis-section-card :deep([data-slot='card-content']) {
+    padding: 0 1rem 1rem;
+  }
+
+  .analysis-table-scroll {
+    overflow: visible;
+  }
+
+  .analysis-table-scroll :deep([data-slot='scroll-area-viewport']),
+  .analysis-score-scroll :deep([data-slot='scroll-area-viewport']),
+  .analysis-weight-scroll :deep([data-slot='scroll-area-viewport']) {
+    overflow: visible !important;
+  }
+
+  :deep(.analysis-comparison-table),
+  :deep(.analysis-score-table),
+  :deep(.analysis-weight-table) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  :deep(.analysis-comparison-table thead),
+  :deep(.analysis-score-table thead),
+  :deep(.analysis-weight-table thead) {
+    display: none;
+  }
+
+  :deep(.analysis-comparison-table tbody),
+  :deep(.analysis-score-table tbody),
+  :deep(.analysis-weight-table tbody) {
+    display: grid;
+    gap: 0.625rem;
+  }
+
+  .analysis-comparison-row,
+  .analysis-score-row,
+  .analysis-weight-row {
+    display: grid;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--background);
+    padding: 0.25rem 0;
+  }
+
+  .analysis-comparison-cell,
+  .analysis-score-cell,
+  .analysis-weight-cell {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 0.75fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 0.75rem;
+    border: 0;
+    padding: 0.5rem 0.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  .analysis-comparison-cell::before,
+  .analysis-score-cell::before,
+  .analysis-weight-cell::before {
+    content: attr(data-label);
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+  }
+
+  .analysis-comparison-cell + .analysis-comparison-cell,
+  .analysis-score-cell + .analysis-score-cell,
+  .analysis-weight-cell + .analysis-weight-cell {
+    border-top: 1px solid var(--border);
+  }
+
+  .analysis-improvement {
+    width: fit-content;
+  }
+}
+</style>

@@ -86,17 +86,17 @@ const navigationItems = [
   width: 14.5rem;
   flex-direction: column;
   overflow: hidden;
-  border-right: 1px solid hsl(0 0% 100% / 0.13);
-  background: hsl(0 0% 5%);
-  color: hsl(0 0% 98%);
+  border-right: 1px solid var(--sidebar-border);
+  background: var(--sidebar);
+  color: var(--sidebar-foreground);
   padding: 1.25rem 0.75rem;
   box-shadow:
-    inset -1px 0 0 hsl(0 0% 100% / 0.08),
+    inset -1px 0 0 color-mix(in oklch, var(--sidebar-foreground) 8%, transparent),
     18px 0 44px hsl(0 0% 0% / 0.16);
 }
 
 .sidebar-brand {
-  color: hsl(0 0% 98%);
+  color: var(--sidebar-foreground);
 }
 
 .sidebar-brand p:first-child {
@@ -104,20 +104,20 @@ const navigationItems = [
 }
 
 .sidebar-brand p:last-child {
-  color: hsl(0 0% 100% / 0.66);
+  color: color-mix(in oklch, var(--sidebar-foreground) 66%, transparent);
 }
 
 .sidebar-logo {
-  border: 1px solid hsl(0 0% 100% / 0.2);
-  background: hsl(0 0% 100% / 0.1);
-  color: hsl(0 0% 100%);
+  border: 1px solid color-mix(in oklch, var(--sidebar-foreground) 20%, transparent);
+  background: color-mix(in oklch, var(--sidebar-foreground) 10%, transparent);
+  color: var(--sidebar-foreground);
   box-shadow: none;
 }
 
 .sidebar-nav-button {
   position: relative;
   border: 1px solid transparent;
-  color: hsl(0 0% 100% / 0.78);
+  color: color-mix(in oklch, var(--sidebar-foreground) 78%, transparent);
   transition:
     color 160ms ease,
     border-color 160ms ease,
@@ -127,28 +127,28 @@ const navigationItems = [
 }
 
 .sidebar-nav-button:hover {
-  border-color: hsl(0 0% 100% / 0.14);
-  background: hsl(0 0% 100% / 0.07);
-  color: hsl(0 0% 100% / 0.95);
+  border-color: color-mix(in oklch, var(--sidebar-foreground) 14%, transparent);
+  background: color-mix(in oklch, var(--sidebar-foreground) 7%, transparent);
+  color: color-mix(in oklch, var(--sidebar-foreground) 95%, transparent);
 }
 
 .sidebar-nav-button--active,
 .sidebar-nav-button--active:hover {
-  border-color: hsl(0 0% 100% / 0.22);
-  background: hsl(0 0% 22% / 0.76);
-  color: hsl(0 0% 100%);
-  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.1);
+  border-color: color-mix(in oklch, var(--sidebar-foreground) 22%, transparent);
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--sidebar-foreground) 10%, transparent);
   backdrop-filter: blur(10px);
 }
 
 .sidebar-status-card {
-  border: 1px solid hsl(0 0% 100% / 0.16);
-  background: hsl(0 0% 100% / 0.08);
-  color: hsl(0 0% 98%);
+  border: 1px solid color-mix(in oklch, var(--sidebar-foreground) 16%, transparent);
+  background: color-mix(in oklch, var(--sidebar-foreground) 8%, transparent);
+  color: var(--sidebar-foreground);
   box-shadow: none;
 }
 
 .sidebar-status-card p:last-child {
-  color: hsl(0 0% 100% / 0.72);
+  color: color-mix(in oklch, var(--sidebar-foreground) 72%, transparent);
 }
 </style>

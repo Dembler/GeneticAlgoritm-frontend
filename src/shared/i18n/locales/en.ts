@@ -26,6 +26,8 @@ const en = {
     themeLabel: 'Theme',
     themeHint: 'Switch between light and dark theme.',
     themeSwitchAria: 'Dark theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
     backendLabel: 'Backend',
     versionUnavailable: 'version unavailable',
     lastCheck: 'Last check: {value}',

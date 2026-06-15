@@ -677,11 +677,11 @@ watch(
   bottom: 1rem;
   z-index: 500;
   max-width: min(28rem, calc(100% - 2rem));
-  border: 1px solid hsl(0 0% 0% / 0.1);
+  border: 1px solid var(--border);
   border-radius: 999px;
-  background: hsl(0 0% 100% / 0.9);
+  background: color-mix(in oklch, var(--card) 90%, transparent);
   padding: 0.5rem 0.875rem;
-  color: hsl(0 0% 28%);
+  color: var(--foreground);
   font-size: 0.75rem;
   line-height: 1rem;
   box-shadow: 0 10px 24px hsl(0 0% 0% / 0.08);
@@ -696,9 +696,9 @@ watch(
   display: grid;
   min-width: min(24rem, calc(100% - 2rem));
   gap: 0.5rem;
-  border: 1px solid hsl(0 0% 0% / 0.1);
+  border: 1px solid var(--border);
   border-radius: 0.875rem;
-  background: hsl(0 0% 100% / 0.9);
+  background: color-mix(in oklch, var(--card) 90%, transparent);
   padding: 0.75rem;
   color: var(--foreground);
   font-size: 0.75rem;
@@ -715,7 +715,7 @@ watch(
 
 .route-legend__line {
   height: 0;
-  border-top: 5px solid hsl(0 0% 7%);
+  border-top: 5px solid var(--foreground);
   border-radius: 999px;
 }
 
@@ -771,21 +771,21 @@ watch(
 
 :deep(.leaflet-control-zoom) {
   overflow: hidden;
-  border: 1px solid hsl(0 0% 0% / 0.12);
+  border: 1px solid var(--border);
   border-radius: 0.875rem;
   box-shadow: 0 12px 30px hsl(0 0% 0% / 0.08);
 }
 
 :deep(.leaflet-control-zoom a) {
   border: 0;
-  background: hsl(0 0% 100% / 0.86);
-  color: hsl(0 0% 6%);
+  background: color-mix(in oklch, var(--card) 88%, transparent);
+  color: var(--foreground);
 }
 
 :deep(.leaflet-control-attribution) {
   border-radius: 999px 0 0 0;
-  background: hsl(0 0% 100% / 0.72);
-  color: hsl(0 0% 34%);
+  background: color-mix(in oklch, var(--card) 82%, transparent);
+  color: var(--muted-foreground);
   font-size: 0.625rem;
 }
 

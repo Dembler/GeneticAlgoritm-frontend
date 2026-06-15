@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Clock3, Fuel, Route, Scale } from 'lucide-vue-next'
 
 import { Skeleton } from '@/shared/ui'
 import type { RouteResponse } from '@/shared/api/route.types'
@@ -17,6 +18,7 @@ type MetricCardItem = {
   value: string
   detail?: string
   accent: 'blue' | 'emerald' | 'amber' | 'violet'
+  icon: typeof Route
 }
 
 const metrics = computed(
@@ -41,12 +43,14 @@ const cards = computed<MetricCardItem[]>(() => {
       label: 'Дистанция',
       value: `${formatNumber(current.distance_km, 1)} км`,
       accent: 'blue',
+      icon: Route,
     },
     {
       label: 'Время',
       value: formatDuration(current.duration_min),
       detail: averageSpeed ? `${formatNumber(averageSpeed, 1)} км/ч средняя` : undefined,
       accent: 'emerald',
+      icon: Clock3,
     },
     {
       label: 'Стоимость',
@@ -57,6 +61,7 @@ const cards = computed<MetricCardItem[]>(() => {
       ),
       detail: 'топливо и эксплуатация',
       accent: 'amber',
+      icon: Scale,
     },
     {
       label: 'Топливо',
@@ -67,6 +72,7 @@ const cards = computed<MetricCardItem[]>(() => {
         true,
       ),
       accent: 'violet',
+      icon: Fuel,
     },
   ]
 })
@@ -85,6 +91,7 @@ const cards = computed<MetricCardItem[]>(() => {
         :value="card.value"
         :detail="card.detail"
         :accent="card.accent"
+        :icon="card.icon"
       />
     </template>
   </div>

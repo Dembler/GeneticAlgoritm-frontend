@@ -268,12 +268,6 @@ function getPointKey(point: Point) {
   return key
 }
 
-function nullableStringValue(event: Event) {
-  const value = (event.target as HTMLInputElement).value.trim()
-
-  return value ? value : null
-}
-
 function nullableNumberValue(event: Event) {
   const value = (event.target as HTMLInputElement).value
 
@@ -460,12 +454,20 @@ onUnmounted(() => {
 
         <div v-if="draft" class="min-h-0 flex-1 overflow-y-auto px-4">
           <Tabs default-value="route" class="grid gap-4 py-4">
-            <div class="overflow-x-auto">
-              <TabsList>
-                <TabsTrigger value="route">{{ t('route.tabs.route') }}</TabsTrigger>
-                <TabsTrigger value="vehicle">{{ t('route.tabs.vehicle') }}</TabsTrigger>
-                <TabsTrigger value="cargo">{{ t('route.tabs.cargo') }}</TabsTrigger>
-                <TabsTrigger value="constraints">{{ t('route.tabs.constraints') }}</TabsTrigger>
+            <div class="route-tabs-wrap">
+              <TabsList class="route-tabs-list">
+                <TabsTrigger class="route-tabs-trigger" value="route">
+                  {{ t('route.tabs.route') }}
+                </TabsTrigger>
+                <TabsTrigger class="route-tabs-trigger" value="vehicle">
+                  {{ t('route.tabs.vehicle') }}
+                </TabsTrigger>
+                <TabsTrigger class="route-tabs-trigger" value="cargo">
+                  {{ t('route.tabs.cargo') }}
+                </TabsTrigger>
+                <TabsTrigger class="route-tabs-trigger" value="constraints">
+                  {{ t('route.tabs.constraints') }}
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -505,16 +507,6 @@ onUnmounted(() => {
                       </SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div class="grid gap-2 sm:col-span-2">
-                  <Label class="text-xs text-muted-foreground">{{ t('route.departureAt') }}</Label>
-                  <Input
-                    :value="draft.departure_at ?? ''"
-                    class="h-9"
-                    placeholder="2026-06-10T07:30:00+00:00"
-                    @input="draft.departure_at = nullableStringValue($event)"
-                  />
                 </div>
               </div>
 
@@ -874,9 +866,9 @@ onUnmounted(() => {
 }
 
 .route-kicker {
-  border-color: hsl(0 0% 0% / 0.14);
+  border-color: var(--border);
   background: var(--card);
-  color: hsl(0 0% 12%);
+  color: var(--foreground);
   box-shadow: none;
 }
 
@@ -889,7 +881,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: flex-end;
   gap: 0.625rem;
-  border: 1px solid hsl(0 0% 0% / 0.1);
+  border: 1px solid var(--border);
   border-radius: 1rem;
   background: var(--card);
   padding: 0.5rem;
@@ -897,22 +889,22 @@ onUnmounted(() => {
 }
 
 .route-action-button {
-  border-color: hsl(0 0% 0% / 0.12);
+  border-color: var(--border);
   background: var(--card);
-  color: hsl(0 0% 11%);
+  color: var(--foreground);
   box-shadow: none;
 }
 
 .route-action-button:hover {
   background: var(--accent);
-  color: hsl(0 0% 5%);
+  color: var(--accent-foreground);
 }
 
 .route-action-button--primary,
 .route-action-button--primary:hover {
-  border-color: hsl(0 0% 0% / 0.72);
-  background: hsl(0 0% 5%);
-  color: hsl(0 0% 99%);
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
   box-shadow: none;
 }
 
@@ -932,7 +924,7 @@ onUnmounted(() => {
   height: 50rem;
   min-height: 38rem;
   overflow: hidden;
-  border: 1px solid hsl(0 0% 0% / 0.12);
+  border: 1px solid var(--border);
   border-radius: 1.25rem;
   background: var(--card);
   box-shadow: 0 16px 36px hsl(0 0% 0% / 0.07);
@@ -945,6 +937,29 @@ onUnmounted(() => {
 
 .route-factors-side {
   align-self: start;
+}
+
+.route-tabs-wrap {
+  min-width: 0;
+  width: 100%;
+}
+
+.route-tabs-list {
+  display: grid;
+  width: 100%;
+  height: auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+
+.route-tabs-trigger {
+  min-width: 0;
+  min-height: 2.25rem;
+  height: auto;
+  padding: 0.375rem 0.625rem;
+  white-space: normal;
+  line-height: 1.2rem;
+  text-align: center;
 }
 
 .surface-card {
@@ -966,7 +981,7 @@ onUnmounted(() => {
   width: min(92vw, 30rem);
   gap: 0;
   overflow: hidden;
-  border-color: hsl(0 0% 0% / 0.14);
+  border-color: var(--border);
   border-radius: 0.875rem;
   background: var(--card);
   color: var(--card-foreground);
@@ -994,10 +1009,10 @@ onUnmounted(() => {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 1px solid hsl(0 0% 0% / 0.14);
+  border: 1px solid var(--border);
   border-radius: 0.625rem;
-  background: hsl(0 0% 96%);
-  color: hsl(0 0% 10%);
+  background: var(--secondary);
+  color: var(--secondary-foreground);
 }
 
 .route-calculation-title {
@@ -1021,9 +1036,9 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem 1rem;
-  border: 1px solid hsl(0 0% 0% / 0.1);
+  border: 1px solid var(--border);
   border-radius: 0.625rem;
-  background: hsl(0 0% 97%);
+  background: var(--muted);
   padding: 0.625rem 0.75rem;
   color: var(--muted-foreground);
   font-size: 0.75rem;
@@ -1069,6 +1084,10 @@ onUnmounted(() => {
 }
 
 @media (max-width: 640px) {
+  .route-tabs-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .route-actions-panel {
     border-radius: 1rem;
   }

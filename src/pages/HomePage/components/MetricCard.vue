@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Component } from 'vue'
+
 import { Card, CardContent } from '@/shared/ui'
 
 defineProps<{
@@ -6,6 +8,7 @@ defineProps<{
   value: string
   detail?: string
   accent?: 'blue' | 'emerald' | 'amber' | 'violet'
+  icon?: Component
 }>()
 </script>
 
@@ -14,6 +17,9 @@ defineProps<{
     <CardContent class="flex h-full flex-col gap-3 p-4">
       <div class="flex items-start justify-between gap-3">
         <span class="metric-card__label text-xs font-medium uppercase">{{ label }}</span>
+        <span v-if="icon" class="metric-card__icon">
+          <component :is="icon" class="size-4" />
+        </span>
       </div>
       <strong class="metric-card__value text-2xl font-semibold leading-tight">{{ value }}</strong>
       <span v-if="detail" class="text-xs leading-5 text-muted-foreground">{{ detail }}</span>
@@ -25,25 +31,27 @@ defineProps<{
 .metric-card {
   --metric-accent: var(--chart-1);
   position: relative;
-  border-color: color-mix(in oklch, var(--metric-accent) 32%, var(--border));
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklch, var(--metric-accent) 8%, var(--card)),
-    var(--card) 64%
-  );
-  box-shadow: 0 14px 32px hsl(0 0% 0% / 0.055);
-}
-
-.metric-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: var(--metric-accent);
+  border-color: var(--border);
+  background: var(--card);
+  padding-block: 0;
+  box-shadow: 0 8px 20px hsl(0 0% 0% / 0.035);
 }
 
 .metric-card__label {
-  color: color-mix(in oklch, var(--metric-accent) 62%, var(--muted-foreground));
+  color: var(--muted-foreground);
+}
+
+.metric-card__icon {
+  display: inline-flex;
+  width: 1.875rem;
+  height: 1.875rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--background);
+  color: color-mix(in oklch, var(--metric-accent) 58%, var(--foreground));
 }
 
 .metric-card__value {
