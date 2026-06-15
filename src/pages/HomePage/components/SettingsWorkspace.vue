@@ -49,30 +49,30 @@ watch(
           <CardTitle class="text-base">{{ t('settings.mainTitle') }}</CardTitle>
         </CardHeader>
         <CardContent class="grid gap-5">
-          <div class="grid gap-2 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
-            <Label class="pt-1">{{ t('settings.themeLabel') }}</Label>
-            <div class="theme-card">
-              <div class="theme-card-copy">
-                <div class="theme-card-icon">
-                  <Moon class="size-4" />
-                </div>
+          <div class="theme-card">
+            <div class="theme-card-copy">
+              <div class="theme-card-icon">
+                <Moon class="size-4" />
+              </div>
+              <div class="min-w-0">
+                <Label class="theme-card-title">{{ t('settings.themeLabel') }}</Label>
                 <p class="text-xs leading-5 text-muted-foreground">
                   {{ t('settings.themeHint') }}
                 </p>
               </div>
-              <div class="theme-toggle-control">
-                <span class="theme-toggle-label">{{ themeStateLabel }}</span>
-                <Switch
-                  v-model="isDarkTheme"
-                  class="theme-switch"
-                  :aria-label="t('settings.themeSwitchAria')"
-                >
-                  <template #thumb>
-                    <Moon v-if="isDarkTheme" class="size-3" />
-                    <Sun v-else class="size-3" />
-                  </template>
-                </Switch>
-              </div>
+            </div>
+            <div class="theme-toggle-control">
+              <span class="theme-toggle-label">{{ themeStateLabel }}</span>
+              <Switch
+                v-model="isDarkTheme"
+                class="theme-switch"
+                :aria-label="t('settings.themeSwitchAria')"
+              >
+                <template #thumb>
+                  <Moon v-if="isDarkTheme" class="size-3" />
+                  <Sun v-else class="size-3" />
+                </template>
+              </Switch>
             </div>
           </div>
         </CardContent>
@@ -85,19 +85,27 @@ watch(
 .theme-card {
   display: grid;
   width: 100%;
-  max-width: 28rem;
   gap: 1rem;
+  align-items: center;
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   background: var(--card);
-  padding: 1rem;
+  padding: 1rem 1.25rem;
 }
 
 .theme-card-copy {
   display: flex;
   min-width: 0;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
+}
+
+.theme-card-title {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .theme-card-icon {
@@ -116,6 +124,7 @@ watch(
 .theme-toggle-control {
   display: flex;
   width: 100%;
+  min-width: 0;
   flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
@@ -179,13 +188,29 @@ watch(
 
 @media (min-width: 520px) {
   .theme-card {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr) minmax(11rem, auto);
   }
 
   .theme-toggle-control {
-    width: auto;
-    min-width: 8.75rem;
+    justify-self: end;
+    width: min(100%, 15rem);
+    min-width: 11rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .theme-card {
+    padding: 0.875rem;
+  }
+
+  .theme-toggle-control {
+    justify-self: stretch;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .theme-toggle-label {
+    white-space: normal;
   }
 }
 </style>
