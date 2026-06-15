@@ -78,7 +78,7 @@ function numberFromEvent(event: Event, fallback: number) {
 </script>
 
 <template>
-  <div class="grid gap-3 rounded-xl border bg-card/90 p-3 text-sm shadow-sm">
+  <div class="grid gap-3 rounded-xl border bg-card/90 p-3 text-sm shadow-sm" @click.stop>
     <div class="flex items-center justify-between gap-3">
       <Badge variant="secondary">{{ t('pointInput.pointNumber', { number: index + 1 }) }}</Badge>
 
@@ -129,6 +129,7 @@ function numberFromEvent(event: Event, fallback: number) {
           :value="query"
           class="h-9 pl-9"
           :placeholder="t('pointInput.addressPlaceholder')"
+          @keydown.enter.prevent
           @input="updateAddress(($event.target as HTMLInputElement).value)"
         />
         <Loader2
@@ -146,6 +147,7 @@ function numberFromEvent(event: Event, fallback: number) {
           :key="suggestion.id"
           type="button"
           class="block w-full px-3 py-2 text-left text-xs leading-5 hover:bg-accent hover:text-accent-foreground"
+          @pointerdown.prevent
           @click="selectSuggestion(suggestion)"
         >
           {{ suggestion.label }}

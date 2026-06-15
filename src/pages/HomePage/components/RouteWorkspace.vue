@@ -38,6 +38,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  toast,
 } from '@/shared/ui'
 import type { Point, RouteRequest, RouteResponse } from '@/shared/api/route.types'
 import { formatMoney, formatNumber } from '@/shared/lib/format/number'
@@ -206,6 +207,9 @@ function addPoint() {
     lat: Number(((previousPoint?.lat ?? 55.7558) + 0.08).toFixed(6)),
     lon: Number(((previousPoint?.lon ?? 37.6173) + 0.08).toFixed(6)),
   })
+  toast.success(t('pointInput.added'), {
+    duration: 1600,
+  })
 }
 
 function updatePoint(index: number, point: Point) {
@@ -213,7 +217,7 @@ function updatePoint(index: number, point: Point) {
     return
   }
 
-  draft.value.points[index] = point
+  Object.assign(draft.value.points[index], point)
 }
 
 function removePoint(index: number) {
@@ -240,6 +244,11 @@ function movePoint(index: number, direction: -1 | 1) {
   if (point) {
     draft.value.points.splice(targetIndex, 0, point)
   }
+}
+
+function runFromCoordinatesSheet() {
+  coordinatesOpen.value = false
+  emit('run')
 }
 
 const pointKeys = new WeakMap<Point, string>()
@@ -758,7 +767,7 @@ onUnmounted(() => {
               <SlidersHorizontal class="size-4" />
               {{ t('route.advancedSettings') }}
             </Button>
-            <Button :disabled="!canRun" @click="emit('run')">
+            <Button :disabled="!canRun" @click="runFromCoordinatesSheet">
               <Play v-if="!running" class="size-4" />
               {{ running ? t('route.calculationRunning') : t('route.calculate') }}
             </Button>

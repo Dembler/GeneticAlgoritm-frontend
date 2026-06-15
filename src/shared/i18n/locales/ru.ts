@@ -254,6 +254,7 @@ const ru = {
     moveUp: 'Переместить выше',
     moveDown: 'Переместить ниже',
     defaultLabel: 'Точка {number}',
+    added: 'Точка добавлена',
   },
 }
 

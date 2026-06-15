@@ -272,7 +272,7 @@ function runScenario(scenario: Scenario) {
 
 .scenario-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
   gap: 0.75rem;
 }
 
@@ -335,6 +335,7 @@ function runScenario(scenario: Scenario) {
 
 .scenario-button {
   height: 2.25rem;
+  min-width: 0;
 }
 
 .scenario-card:nth-child(2) .scenario-icon {
@@ -370,12 +371,43 @@ function runScenario(scenario: Scenario) {
 }
 
 @media (max-width: 640px) {
+  .scenario-header {
+    padding: 1rem 1rem 0.625rem;
+  }
+
+  .scenario-content {
+    padding: 0.625rem 1rem 1rem;
+  }
+
   .scenario-card {
     grid-template-columns: 1fr;
+    gap: 0.875rem;
+    padding: 0.875rem;
+  }
+
+  .scenario-card h3 {
+    font-size: 0.9375rem;
+    line-height: 1.25rem;
+  }
+
+  .scenario-description {
+    -webkit-line-clamp: 3;
   }
 
   .scenario-actions {
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scenario-button {
+    width: 100%;
+    padding-inline: 0.625rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .scenario-actions {
+    grid-template-columns: 1fr;
   }
 }
 </style>

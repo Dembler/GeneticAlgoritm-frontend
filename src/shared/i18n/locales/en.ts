@@ -255,6 +255,7 @@ const en = {
     moveUp: 'Move up',
     moveDown: 'Move down',
     defaultLabel: 'Point {number}',
+    added: 'Point added',
   },
 }
 
