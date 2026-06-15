@@ -213,12 +213,14 @@ watch(
   align-items: center;
   justify-content: center;
   color: var(--foreground);
+  translate: none;
   transform: translateX(var(--theme-switch-thumb-offset));
   box-shadow: 0 1px 4px hsl(0 0% 0% / 0.18);
 }
 
 .theme-switch[data-state='checked'] :deep([data-slot='switch-thumb']) {
   color: var(--primary);
+  translate: none;
   transform: translateX(
     calc(
       var(--theme-switch-width) - var(--theme-switch-thumb-size) -
