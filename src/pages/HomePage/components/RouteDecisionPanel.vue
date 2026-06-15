@@ -47,43 +47,6 @@ const subtitle = computed(() => {
   return 'Маршрут выбран, потому что он сокращает расстояние, время в пути и итоговую стоимость по сравнению с исходным порядком точек.'
 })
 
-const reasons = computed(() => {
-  const improvement = comparisonImprovement.value ?? decisionSummary.value?.improvement_pct
-  const items: Array<{ text: string; positive: boolean }> = []
-
-  function pushImprovement(
-    label: string,
-    value: number | undefined,
-    positiveText: string,
-    negativeText: string,
-  ) {
-    if (value === undefined) {
-      return
-    }
-
-    const positive = value >= 0
-
-    items.push({
-      text: `${label} ${positive ? positiveText : negativeText} на ${formatImprovement(Math.abs(value), 1)}`,
-      positive,
-    })
-  }
-
-  pushImprovement('Расстояние', improvement?.distance_km, 'меньше', 'больше')
-  pushImprovement('Время в пути', improvement?.duration_min, 'меньше', 'больше')
-  pushImprovement('Стоимость', improvement?.operational_cost, 'ниже', 'выше')
-  pushImprovement('Выбросы CO2', improvement?.co2_kg, 'ниже', 'выше')
-
-  if (!items.length) {
-    items.push({
-      text: 'Маршрут соответствует заданным ограничениям',
-      positive: Boolean(metrics.value?.feasible ?? true),
-    })
-  }
-
-  return items
-})
-
 function percentLowerIsBetter(
   baseline: number | null | undefined,
   current: number | null | undefined,
