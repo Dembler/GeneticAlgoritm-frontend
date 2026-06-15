@@ -1,9 +1,5 @@
 import { formatPercent } from './number'
 
-function isEnglish() {
-  return typeof document !== 'undefined' && document.documentElement.lang === 'en'
-}
-
 const providerLabelsRu: Record<string, string> = {
   'tomtom-routing': 'TomTom',
   'tomtom routing': 'TomTom',
@@ -14,18 +10,6 @@ const providerLabelsRu: Record<string, string> = {
   'osrm+fallback': 'OSRM + резервная модель',
   backend: 'Backend',
   unknown: 'неизвестно',
-}
-
-const providerLabelsEn: Record<string, string> = {
-  'tomtom-routing': 'TomTom',
-  'tomtom routing': 'TomTom',
-  tomtom: 'TomTom',
-  osrm: 'OSRM',
-  'public osrm': 'OSRM',
-  fallback: 'Fallback model',
-  'osrm+fallback': 'OSRM + fallback model',
-  backend: 'Backend',
-  unknown: 'unknown',
 }
 
 const statusLabelsRu: Record<string, string> = {
@@ -44,22 +28,6 @@ const statusLabelsRu: Record<string, string> = {
   unknown: 'неизвестно',
 }
 
-const statusLabelsEn: Record<string, string> = {
-  ok: 'OK',
-  active: 'Active',
-  disabled: 'Disabled',
-  ready: 'Ready',
-  gain: 'Gain',
-  factor: 'Factor',
-  balanced: 'Balanced mode',
-  weighted: 'Weighted score',
-  pareto: 'Pareto approach',
-  strict: 'Strict mode',
-  'fallback-ready': 'Fallback ready',
-  degraded: 'Degraded',
-  unknown: 'unknown',
-}
-
 const integrationLabelsRu: Record<string, string> = {
   'OSRM Routing': 'Маршрутизация OSRM',
   Weather: 'Погода',
@@ -70,18 +38,6 @@ const integrationLabelsRu: Record<string, string> = {
   'Infrastructure restrictions': 'Ограничения транспорта',
   Tolls: 'Платные дороги',
   'Fuel prices': 'Цены на топливо',
-}
-
-const integrationLabelsEn: Record<string, string> = {
-  'OSRM Routing': 'OSRM routing',
-  Weather: 'Weather',
-  Elevation: 'Elevation',
-  Traffic: 'Traffic',
-  'Road quality': 'Road quality',
-  'Road events': 'Road events',
-  'Infrastructure restrictions': 'Vehicle restrictions',
-  Tolls: 'Tolls',
-  'Fuel prices': 'Fuel prices',
 }
 
 const sourceLabelsRu: Record<string, string> = {
@@ -109,17 +65,6 @@ const sourceLabelsRu: Record<string, string> = {
   'seasonal profile': 'сезонный профиль',
   'synthetic congestion index': 'расчетный индекс трафика',
   backend: 'Backend',
-}
-
-const sourceLabelsEn: Record<string, string> = {
-  ...sourceLabelsRu,
-  fallback: 'Fallback model',
-  'synthetic fallback': 'Fallback model',
-  'cached demo provider': 'Demo provider',
-  'not configured': 'not configured',
-  'Haversine matrix': 'Fallback model',
-  'seasonal profile': 'seasonal profile',
-  'synthetic congestion index': 'synthetic congestion index',
 }
 
 const textReplacementsRu: Array<[RegExp, string]> = [
@@ -173,7 +118,7 @@ export function normalizePercentText(value: string) {
 
 export function formatMissing(value: string | number | null | undefined) {
   if (value === null || value === undefined || value === '') {
-    return isEnglish() ? 'no data' : 'нет данных'
+    return 'нет данных'
   }
 
   return String(value)
@@ -183,36 +128,30 @@ export function formatProvider(value: string | null | undefined) {
   const normalized = value?.trim()
 
   if (!normalized) {
-    return isEnglish() ? 'unknown' : 'неизвестно'
+    return 'неизвестно'
   }
 
-  const labels = isEnglish() ? providerLabelsEn : providerLabelsRu
-
-  return labels[normalized] ?? labels[normalized.toLowerCase()] ?? normalized
+  return providerLabelsRu[normalized] ?? providerLabelsRu[normalized.toLowerCase()] ?? normalized
 }
 
 export function formatTechnicalStatus(value: string | null | undefined) {
   const normalized = value?.trim()
 
   if (!normalized) {
-    return isEnglish() ? 'unknown' : 'неизвестно'
+    return 'неизвестно'
   }
 
-  const labels = isEnglish() ? statusLabelsEn : statusLabelsRu
-
-  return labels[normalized] ?? labels[normalized.toLowerCase()] ?? normalized
+  return statusLabelsRu[normalized] ?? statusLabelsRu[normalized.toLowerCase()] ?? normalized
 }
 
 export function formatDataSource(value: string | null | undefined) {
   const normalized = value?.trim()
 
   if (!normalized) {
-    return isEnglish() ? 'no data' : 'нет данных'
+    return 'нет данных'
   }
 
-  const labels = isEnglish() ? sourceLabelsEn : sourceLabelsRu
-
-  return labels[normalized] ?? labels[normalized.toLowerCase()] ?? normalized
+  return sourceLabelsRu[normalized] ?? sourceLabelsRu[normalized.toLowerCase()] ?? normalized
 }
 
 export function hasFallbackSource(value: string | null | undefined) {
@@ -225,21 +164,15 @@ export function formatIntegrationName(value: string | null | undefined) {
   const normalized = value?.trim()
 
   if (!normalized) {
-    return isEnglish() ? 'integration' : 'интеграция'
+    return 'интеграция'
   }
 
-  const labels = isEnglish() ? integrationLabelsEn : integrationLabelsRu
-
-  return labels[normalized] ?? normalized
+  return integrationLabelsRu[normalized] ?? normalized
 }
 
 export function translateBackendText(value: string | null | undefined) {
   if (!value) {
     return ''
-  }
-
-  if (isEnglish()) {
-    return value
   }
 
   return normalizePercentText(
@@ -251,16 +184,16 @@ export function translateBackendText(value: string | null | undefined) {
 }
 
 export function translateTrigger(value: string) {
-  return isEnglish() ? value : (triggerLabelsRu[value] ?? value)
+  return triggerLabelsRu[value] ?? value
 }
 
 export function formatImprovement(value: number | null | undefined, fractionDigits = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return isEnglish() ? 'no data' : 'нет данных'
+    return 'нет данных'
   }
 
   if (Math.abs(value) < 0.05) {
-    return isEnglish() ? 'no improvement' : 'без улучшения'
+    return 'без улучшения'
   }
 
   return formatPercent(value, fractionDigits)

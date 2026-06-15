@@ -1,16 +1,14 @@
 import { createI18n } from 'vue-i18n'
 
-import { defaultLocale, getStoredLocale, messages } from '@/shared/i18n'
-
-const initialLocale = getStoredLocale()
+import { defaultLocale, messages } from '@/shared/i18n'
 
 if (typeof document !== 'undefined') {
-  document.documentElement.lang = initialLocale
+  document.documentElement.lang = defaultLocale
 }
 
 export const i18n = createI18n({
   legacy: false,
-  locale: initialLocale,
+  locale: defaultLocale,
   fallbackLocale: defaultLocale,
   messages,
   globalInjection: true,

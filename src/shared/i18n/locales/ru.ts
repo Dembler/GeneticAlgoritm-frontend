@@ -22,8 +22,6 @@ const ru = {
     badge: 'Настройки',
     title: 'Параметры интерфейса',
     mainTitle: 'Основные параметры',
-    languageLabel: 'Язык интерфейса',
-    languageHint: 'Для демонстрационного режима рекомендуется русский интерфейс.',
     themeLabel: 'Тема',
     themeHint: 'Переключение между светлой и темной темой.',
     themeSwitchAria: 'Темная тема',
@@ -48,10 +46,6 @@ const ru = {
     dataSourcesEmpty: 'Источники данных появятся после ответа /api/integrations/status.',
     dataSourceDetail: '{source}. Резерв: {fallback}',
     integrationFallback: 'Интеграция',
-    languages: {
-      ru: 'Русский',
-      en: 'Английский',
-    },
   },
   status: {
     ok: 'Выполнено',

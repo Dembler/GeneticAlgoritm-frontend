@@ -1,21 +1,11 @@
-function getLocale() {
-  if (typeof document !== 'undefined' && document.documentElement.lang === 'en') {
-    return 'en-US'
-  }
-
-  return 'ru-RU'
-}
-
-function getLanguage() {
-  return getLocale() === 'en-US' ? 'en' : 'ru'
-}
+const locale = 'ru-RU'
 
 export function formatNumber(value: number | null | undefined, fractionDigits = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return '-'
   }
 
-  return new Intl.NumberFormat(getLocale(), {
+  return new Intl.NumberFormat(locale, {
     maximumFractionDigits: fractionDigits,
     minimumFractionDigits: fractionDigits,
   }).format(value)
@@ -26,7 +16,7 @@ export function formatCompactNumber(value: number | null | undefined) {
     return '-'
   }
 
-  return new Intl.NumberFormat(getLocale(), {
+  return new Intl.NumberFormat(locale, {
     notation: 'compact',
     maximumFractionDigits: 1,
   }).format(value)
@@ -37,7 +27,7 @@ export function formatInteger(value: number | null | undefined) {
     return '-'
   }
 
-  return new Intl.NumberFormat(getLocale(), {
+  return new Intl.NumberFormat(locale, {
     maximumFractionDigits: 0,
   }).format(Math.round(value))
 }
@@ -55,7 +45,7 @@ export function formatMoney(value: number | null | undefined, currency = 'RUB', 
     return '-'
   }
 
-  return new Intl.NumberFormat(getLocale(), {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     notation: compact ? 'compact' : 'standard',
@@ -70,14 +60,6 @@ export function formatDuration(minutes: number | null | undefined) {
 
   const hours = Math.floor(minutes / 60)
   const rest = Math.round(minutes % 60)
-
-  if (getLanguage() === 'en') {
-    if (hours <= 0) {
-      return `${rest} min`
-    }
-
-    return `${hours} h ${rest} min`
-  }
 
   if (hours <= 0) {
     return `${rest} мин`

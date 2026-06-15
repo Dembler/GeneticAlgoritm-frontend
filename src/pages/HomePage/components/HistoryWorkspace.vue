@@ -42,11 +42,11 @@ const emit = defineEmits<{
   openRun: [runId: string]
 }>()
 
-const { locale, t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: 'global' })
 
 const dateFormatter = computed(
   () =>
-    new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'ru-RU', {
+    new Intl.DateTimeFormat('ru-RU', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

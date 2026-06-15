@@ -76,7 +76,7 @@ const emit = defineEmits<{
   runScenario: [draft: RouteRequest]
 }>()
 
-const { locale, t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: 'global' })
 const coordinatesOpen = ref(false)
 const settingsOpen = ref(false)
 const elapsedSeconds = ref(0)
@@ -88,7 +88,7 @@ const priorityValues = ['balanced', 'fastest', 'cheapest', 'greenest'] as const
 
 const dateFormatter = computed(
   () =>
-    new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'ru-RU', {
+    new Intl.DateTimeFormat('ru-RU', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

@@ -48,7 +48,7 @@ const selectedAlternativeRank = defineModel<number | null>('selectedAlternativeR
   required: true,
 })
 
-const { locale, t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: 'global' })
 
 type MatrixValue = number | boolean | null
 type MatrixSection = {
@@ -296,7 +296,7 @@ function formatPointOrder(points: Array<{ label?: string | null }>) {
 }
 
 function formatDynamicTrigger(trigger: string) {
-  return locale.value === 'ru' ? translateTrigger(trigger) : trigger
+  return translateTrigger(trigger)
 }
 </script>
 

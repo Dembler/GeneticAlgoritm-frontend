@@ -4,25 +4,10 @@ import { useI18n } from 'vue-i18n'
 import { useLocalStorage } from '@vueuse/core'
 import { Moon, Sun } from 'lucide-vue-next'
 
-import {
-  Badge,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Switch,
-} from '@/shared/ui'
-import { getStoredLocale, isSupportedLocale, localeStorageKey, type Locale } from '@/shared/i18n'
+import { Badge, Card, CardContent, CardHeader, CardTitle, Label, Switch } from '@/shared/ui'
 import { applyTheme, getStoredTheme, isAppTheme, themeStorageKey, type AppTheme } from '@/app/theme'
 
-const { locale, t } = useI18n({ useScope: 'global' })
-const selectedLocale = useLocalStorage<Locale>(localeStorageKey, getStoredLocale())
+const { t } = useI18n({ useScope: 'global' })
 const selectedTheme = useLocalStorage<AppTheme>(themeStorageKey, getStoredTheme())
 
 const isDarkTheme = computed({
@@ -33,25 +18,6 @@ const isDarkTheme = computed({
 })
 const themeStateLabel = computed(() =>
   selectedTheme.value === 'dark' ? t('settings.themeDark') : t('settings.themeLight'),
-)
-
-watch(
-  selectedLocale,
-  (value) => {
-    const nextLocale = isSupportedLocale(value) ? value : 'ru'
-
-    if (nextLocale !== value) {
-      selectedLocale.value = nextLocale
-      return
-    }
-
-    locale.value = nextLocale
-
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = nextLocale
-    }
-  },
-  { immediate: true },
 )
 
 watch(
@@ -83,24 +49,6 @@ watch(
           <CardTitle class="text-base">{{ t('settings.mainTitle') }}</CardTitle>
         </CardHeader>
         <CardContent class="grid gap-5">
-          <div class="grid gap-2 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
-            <Label class="pt-2">{{ t('settings.languageLabel') }}</Label>
-            <div class="grid w-full max-w-[28rem] gap-2">
-              <Select v-model="selectedLocale" :aria-label="t('settings.languageLabel')">
-                <SelectTrigger class="h-10 w-full rounded-lg bg-input">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ru">{{ t('settings.languages.ru') }}</SelectItem>
-                  <SelectItem value="en">{{ t('settings.languages.en') }}</SelectItem>
-                </SelectContent>
-              </Select>
-              <p class="text-xs leading-5 text-muted-foreground">
-                {{ t('settings.languageHint') }}
-              </p>
-            </div>
-          </div>
-
           <div class="grid gap-2 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
             <Label class="pt-1">{{ t('settings.themeLabel') }}</Label>
             <div class="theme-card">
