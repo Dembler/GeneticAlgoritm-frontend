@@ -174,6 +174,7 @@ const criterionContributions = computed(() => {
         `${formatNumber(current.distance_km, 1)} км`,
       detail: 'влияет на пробег и ресурс транспорта',
       positive: (comparisonImprovement.value?.distance_km ?? 0) >= 0,
+      accent: 'blue',
     },
     {
       label: 'Время',
@@ -182,6 +183,7 @@ const criterionContributions = computed(() => {
         `${formatNumber(current.duration_min, 0)} мин`,
       detail: 'учитывает скорость, трафик и задержки',
       positive: (comparisonImprovement.value?.duration_min ?? 0) >= 0,
+      accent: 'emerald',
     },
     {
       label: 'Стоимость',
@@ -193,6 +195,7 @@ const criterionContributions = computed(() => {
         ) ?? formatMoney(current.operational_cost, currency.value, true),
       detail: 'топливо, водитель, обслуживание и платные дороги',
       positive: (comparisonImprovement.value?.operational_cost ?? 0) >= 0,
+      accent: 'amber',
     },
     {
       label: 'Топливо',
@@ -201,6 +204,7 @@ const criterionContributions = computed(() => {
         `${formatNumber(current.fuel_liters, 1)} л`,
       detail: 'снижает расход и связанные выбросы',
       positive: (fuelImprovement ?? 0) >= 0,
+      accent: 'violet',
     },
     {
       label: 'Риск',
@@ -209,6 +213,7 @@ const criterionContributions = computed(() => {
         `${formatNumber(totalRiskScore(current), 2)} индекс`,
       detail: 'дороги, погода, события и грузовые ограничения',
       positive: (riskImprovement ?? 0) >= 0 && current.feasible,
+      accent: 'rose',
     },
     {
       label: 'Надежность',
@@ -217,6 +222,7 @@ const criterionContributions = computed(() => {
         `${formatPercent(reliabilityScore(current) * 100, 0)}`,
       detail: 'вероятность стабильного прохождения маршрута',
       positive: (reliabilityImprovement ?? 0) >= 0,
+      accent: 'sky',
     },
   ]
 })
@@ -262,7 +268,10 @@ const criterionContributions = computed(() => {
             v-for="criterion in criterionContributions"
             :key="criterion.label"
             class="criterion-card"
-            :class="criterion.positive ? 'criterion-card--positive' : 'criterion-card--negative'"
+            :class="[
+              criterion.positive ? 'criterion-card--positive' : 'criterion-card--negative',
+              `criterion-card--${criterion.accent}`,
+            ]"
           >
             <span>{{ criterion.label }}</span>
             <strong>{{ criterion.value }}</strong>
@@ -272,7 +281,12 @@ const criterionContributions = computed(() => {
       </div>
 
       <div class="decision-grid">
-        <div v-for="reason in reasons" :key="reason.text" class="decision-row">
+        <div
+          v-for="reason in reasons"
+          :key="reason.text"
+          class="decision-row"
+          :class="reason.positive ? 'decision-row--positive' : 'decision-row--negative'"
+        >
           <component :is="reason.positive ? CheckCircle2 : XCircle" class="size-4" />
           <span class="min-w-0">{{ reason.text }}</span>
         </div>
@@ -301,17 +315,29 @@ const criterionContributions = computed(() => {
 }
 
 .criterion-card {
+  --criterion-accent: var(--chart-1);
   display: grid;
+  position: relative;
   min-width: 0;
+  overflow: hidden;
   gap: 0.375rem;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in oklch, var(--criterion-accent) 30%, var(--border));
   border-radius: 0.75rem;
-  background: color-mix(in oklch, var(--background) 72%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--criterion-accent) 7%, var(--background)), var(--background) 76%);
   padding: 0.75rem;
 }
 
+.criterion-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--criterion-accent);
+}
+
 .criterion-card span {
-  color: var(--muted-foreground);
+  color: color-mix(in oklch, var(--criterion-accent) 58%, var(--muted-foreground));
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -330,24 +356,65 @@ const criterionContributions = computed(() => {
 }
 
 .criterion-card--positive {
-  border-color: color-mix(in oklch, var(--positive-foreground) 34%, var(--border));
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--positive-foreground) 8%, transparent);
 }
 
 .criterion-card--negative {
-  border-color: color-mix(in oklch, var(--negative-foreground) 38%, var(--border));
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--negative-foreground) 10%, transparent);
+}
+
+.criterion-card--blue {
+  --criterion-accent: var(--chart-1);
+}
+
+.criterion-card--emerald {
+  --criterion-accent: var(--chart-2);
+}
+
+.criterion-card--amber {
+  --criterion-accent: var(--chart-3);
+}
+
+.criterion-card--violet {
+  --criterion-accent: var(--chart-4);
+}
+
+.criterion-card--rose {
+  --criterion-accent: var(--chart-5);
+}
+
+.criterion-card--sky {
+  --criterion-accent: hsl(194 78% 42%);
 }
 
 .decision-row {
+  --decision-accent: var(--positive-foreground);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 0.625rem;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in oklch, var(--decision-accent) 26%, var(--border));
   border-radius: 0.75rem;
-  background: color-mix(in oklch, var(--background) 70%, transparent);
+  background: color-mix(in oklch, var(--decision-accent) 5%, var(--background));
   padding: 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--foreground);
+}
+
+.decision-row svg {
+  color: var(--decision-accent);
+}
+
+.decision-row--positive {
+  --decision-accent: var(--positive-foreground);
+}
+
+.decision-row--negative {
+  --decision-accent: var(--negative-foreground);
+}
+
+:global(.dark) .criterion-card--sky {
+  --criterion-accent: hsl(194 82% 64%);
 }
 </style>

@@ -16,7 +16,7 @@ type MetricCardItem = {
   label: string
   value: string
   detail?: string
-  tone?: 'default' | 'positive' | 'negative'
+  accent: 'blue' | 'emerald' | 'amber' | 'violet'
 }
 
 const metrics = computed(
@@ -40,11 +40,13 @@ const cards = computed<MetricCardItem[]>(() => {
     {
       label: 'Дистанция',
       value: `${formatNumber(current.distance_km, 1)} км`,
+      accent: 'blue',
     },
     {
       label: 'Время',
       value: formatDuration(current.duration_min),
       detail: averageSpeed ? `${formatNumber(averageSpeed, 1)} км/ч средняя` : undefined,
+      accent: 'emerald',
     },
     {
       label: 'Стоимость',
@@ -54,6 +56,7 @@ const cards = computed<MetricCardItem[]>(() => {
         true,
       ),
       detail: 'топливо и эксплуатация',
+      accent: 'amber',
     },
     {
       label: 'Топливо',
@@ -63,6 +66,7 @@ const cards = computed<MetricCardItem[]>(() => {
         currency.value,
         true,
       ),
+      accent: 'violet',
     },
   ]
 })
@@ -80,7 +84,7 @@ const cards = computed<MetricCardItem[]>(() => {
         :label="card.label"
         :value="card.value"
         :detail="card.detail"
-        :tone="card.tone"
+        :accent="card.accent"
       />
     </template>
   </div>

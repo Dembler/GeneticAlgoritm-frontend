@@ -208,25 +208,25 @@
 
 /* data colors */
 :root {
-  --chart-1: hsl(0 0% 12%);
-  --chart-2: hsl(0 0% 28%);
-  --chart-3: hsl(0 0% 42%);
-  --chart-4: hsl(0 0% 58%);
-  --chart-5: hsl(0 0% 72%);
+  --chart-1: hsl(210 78% 42%);
+  --chart-2: hsl(155 58% 34%);
+  --chart-3: hsl(36 88% 43%);
+  --chart-4: hsl(262 56% 52%);
+  --chart-5: hsl(348 68% 46%);
 
-  --positive-foreground: hsl(0 0% 18%);
-  --negative-foreground: oklch(0.51 0.14 28);
+  --positive-foreground: hsl(155 58% 31%);
+  --negative-foreground: hsl(348 68% 43%);
 }
 
 .dark {
-  --chart-1: hsl(0 0% 90%);
-  --chart-2: hsl(0 0% 74%);
-  --chart-3: hsl(0 0% 60%);
-  --chart-4: hsl(0 0% 46%);
-  --chart-5: hsl(0 0% 32%);
+  --chart-1: hsl(210 86% 68%);
+  --chart-2: hsl(155 62% 62%);
+  --chart-3: hsl(38 92% 64%);
+  --chart-4: hsl(262 72% 72%);
+  --chart-5: hsl(348 78% 68%);
 
-  --positive-foreground: hsl(0 0% 82%);
-  --negative-foreground: oklch(0.72 0.1 28);
+  --positive-foreground: hsl(155 62% 62%);
+  --negative-foreground: hsl(348 78% 68%);
 }
 
 @theme inline {
