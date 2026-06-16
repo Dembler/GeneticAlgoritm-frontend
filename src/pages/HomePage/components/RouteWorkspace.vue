@@ -81,6 +81,15 @@ const coordinatesOpen = ref(false)
 const settingsOpen = ref(false)
 const elapsedSeconds = ref(0)
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
+let scrollLockState: {
+  bodyOverflow: string
+  bodyPosition: string
+  bodyTop: string
+  bodyWidth: string
+  htmlOverflow: string
+  scrollX: number
+  scrollY: number
+} | null = null
 
 const profileValues = ['driving', 'walking', 'cycling'] as const
 const vehicleValues = ['passenger', 'light_truck', 'heavy_truck'] as const
@@ -284,6 +293,46 @@ function requiredNumberValue(event: Event, fallback: number) {
   return nullableNumberValue(event) ?? fallback
 }
 
+function lockPageScroll() {
+  if (scrollLockState || typeof document === 'undefined') {
+    return
+  }
+
+  scrollLockState = {
+    bodyOverflow: document.body.style.overflow,
+    bodyPosition: document.body.style.position,
+    bodyTop: document.body.style.top,
+    bodyWidth: document.body.style.width,
+    htmlOverflow: document.documentElement.style.overflow,
+    scrollX: window.scrollX,
+    scrollY: window.scrollY,
+  }
+
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
+  document.body.style.position = 'fixed'
+  document.body.style.top = `-${scrollLockState.scrollY}px`
+  document.body.style.width = '100%'
+}
+
+function unlockPageScroll() {
+  if (!scrollLockState || typeof document === 'undefined') {
+    return
+  }
+
+  const { bodyOverflow, bodyPosition, bodyTop, bodyWidth, htmlOverflow, scrollX, scrollY } =
+    scrollLockState
+
+  document.documentElement.style.overflow = htmlOverflow
+  document.body.style.overflow = bodyOverflow
+  document.body.style.position = bodyPosition
+  document.body.style.top = bodyTop
+  document.body.style.width = bodyWidth
+  scrollLockState = null
+
+  window.scrollTo(scrollX, scrollY)
+}
+
 watch(
   () => props.running,
   (isRunning) => {
@@ -294,9 +343,11 @@ watch(
 
     if (!isRunning) {
       elapsedSeconds.value = 0
+      unlockPageScroll()
       return
     }
 
+    lockPageScroll()
     elapsedSeconds.value = 0
     elapsedTimer = setInterval(() => {
       elapsedSeconds.value += 1
@@ -309,6 +360,8 @@ onUnmounted(() => {
   if (elapsedTimer) {
     clearInterval(elapsedTimer)
   }
+
+  unlockPageScroll()
 })
 </script>
 
